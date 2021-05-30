@@ -1,15 +1,18 @@
 package types_test
 
 import (
+	"encoding/hex"
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/desmos-labs/desmos/x/profiles/types"
 
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stretchr/testify/require"
 )
@@ -873,4 +876,141 @@ func TestMsgUnblockUser_GetSignBytes(t *testing.T) {
 func TestMsgUnblockUser_GetSigners(t *testing.T) {
 	addr, _ := sdk.AccAddressFromBech32(msgUnblockUser.Blocker)
 	require.Equal(t, []sdk.AccAddress{addr}, msgUnblockUser.GetSigners())
+}
+
+// ___________________________________________________________________________________________________________________
+
+func generateMsgLinkChainAccount(t *testing.T) *types.MsgLinkChainAccount {
+	srcPrivKey := &secp256k1.PrivKey{Key: []byte{26, 15, 45, 205, 181, 29, 11, 13, 171, 161, 135, 61, 94, 174, 82, 9, 220, 10, 66, 180, 9, 49, 96, 179, 16, 189, 143, 132, 152, 111, 59, 30}}
+	srcPubKey := srcPrivKey.PubKey()
+	srcAddr, err := bech32.ConvertAndEncode("cosmos", srcPubKey.Address().Bytes())
+	require.NoError(t, err)
+
+	srcPlainText := srcAddr
+	srcSig, err := srcPrivKey.Sign([]byte(srcPlainText))
+	require.NoError(t, err)
+	srcSigHex := hex.EncodeToString(srcSig)
+
+	destPrivKey := &secp256k1.PrivKey{Key: []byte{25, 15, 45, 205, 181, 29, 11, 13, 171, 161, 135, 61, 94, 174, 82, 9, 220, 10, 66, 180, 9, 49, 96, 179, 16, 189, 143, 132, 152, 111, 59, 30}}
+	destPubKey := destPrivKey.PubKey()
+	destAddr, err := bech32.ConvertAndEncode("cosmos", destPubKey.Address().Bytes())
+	require.NoError(t, err)
+
+	destPlainText := destAddr
+	destSig, err := destPrivKey.Sign([]byte(destPlainText))
+	require.NoError(t, err)
+	destSigHex := hex.EncodeToString(destSig)
+
+	return types.NewMsgLinkChainAccount(
+		srcAddr,
+		types.NewProof(srcPubKey, srcSigHex, srcPlainText),
+		types.NewChainConfig("cosmos", "cosmos"),
+		destAddr,
+		types.NewProof(destPubKey, destSigHex, destPlainText),
+	)
+}
+
+func TestMsgLinkChainAccount_Route(t *testing.T) {
+	msg := generateMsgLinkChainAccount(t)
+	require.Equal(t, "profiles", msg.Route())
+}
+
+func TestMsgLinkChainAccount_Type(t *testing.T) {
+	msg := generateMsgLinkChainAccount(t)
+	require.Equal(t, "link_chain_account", msg.Type())
+}
+
+func TestMsgLinkChainAccount_ValidateBasic(t *testing.T) {
+	validMsg := generateMsgLinkChainAccount(t)
+	tests := []struct {
+		name     string
+		msg      *types.MsgLinkChainAccount
+		expError error
+	}{
+		{
+			name:     "No error message",
+			msg:      validMsg,
+			expError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			returnedError := test.msg.ValidateBasic()
+			if test.expError == nil {
+				require.Nil(t, returnedError)
+			} else {
+				require.NotNil(t, returnedError)
+				require.Equal(t, test.expError.Error(), returnedError.Error())
+			}
+		})
+	}
+}
+
+func TestMsgLinkChainAccount_GetSignBytes(t *testing.T) {
+	msg := generateMsgLinkChainAccount(t)
+	actual := msg.GetSignBytes()
+	expected := `{"type":"desmos/MsgLinkChainAccount","value":{"destination_address":"cosmos1u9hgsqfpe3snftr7p7fsyja3wtlmj2sgf2w9yl","destination_proof":{"plain_text":"cosmos1u9hgsqfpe3snftr7p7fsyja3wtlmj2sgf2w9yl","pub_key":{"type":"tendermint/PubKeySecp256k1","value":"AkbOmF4y2laQnlJ+1clOOkCt799+eEKa16yG0l3zdD7W"},"signature":"0cc2f168d580dcaa5894def8f62594a8bfc2d591e36ae613fe194ea17aa3dd0d0a66f7256dc68d9403adb8975af1405ee8674d20702f67f9652b23906cdc275a"},"source_address":"cosmos1ma346arwsqpmjmkctwxa5uxdx66le3nty0jeax","source_chain_config":{"bech32_addr_prefix":"cosmos","name":"cosmos"},"source_proof":{"plain_text":"cosmos1ma346arwsqpmjmkctwxa5uxdx66le3nty0jeax","pub_key":{"type":"tendermint/PubKeySecp256k1","value":"A7v3HEjiNO2jXJA+2gcBtO2VQ6Vsirs7GODz7dN39H7Q"},"signature":"ad112abb30e5240c7b9d21b4cc5421d76cfadfcd5977cca262523b5f5bc759457d4aa6d5c1eb6223db104b47aa1f222468be8eb5bb2762b971622ac5b96351b5"}}}`
+	require.Equal(t, expected, string(actual))
+}
+
+func TestMsgLinkChainAccount_GetSigners(t *testing.T) {
+	msg := generateMsgLinkChainAccount(t)
+	addr, _ := sdk.AccAddressFromBech32(msg.SourceAddress)
+	require.Equal(t, []sdk.AccAddress{addr}, msg.GetSigners())
+}
+
+// ___________________________________________________________________________________________________________________
+
+var msgUnlinkChainAccount = types.NewMsgUnlinkChainAccount(
+	"cosmos1cjf97gpzwmaf30pzvaargfgr884mpp5ak8f7ns",
+	"cosmos",
+	"cosmos1y54exmx84cqtasvjnskf9f63djuuj68p7hqf47",
+)
+
+func TestMsgUnlinkChainAccount_Route(t *testing.T) {
+	require.Equal(t, "profiles", msgUnlinkChainAccount.Route())
+}
+
+func TestMsgUnlinkChainAccount_Type(t *testing.T) {
+	require.Equal(t, "unlink_chain_account", msgUnlinkChainAccount.Type())
+}
+
+func TestMsgUnlinkChainAccount_ValidateBasic(t *testing.T) {
+	tests := []struct {
+		name     string
+		msg      *types.MsgUnlinkChainAccount
+		expError error
+	}{
+		{
+			name:     "No error message",
+			msg:      msgUnlinkChainAccount,
+			expError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			returnedError := test.msg.ValidateBasic()
+			if test.expError == nil {
+				require.Nil(t, returnedError)
+			} else {
+				require.NotNil(t, returnedError)
+				require.Equal(t, test.expError.Error(), returnedError.Error())
+			}
+		})
+	}
+}
+
+func TestMsgUnlinkChainAccount_GetSignBytes(t *testing.T) {
+	actual := msgUnlinkChainAccount.GetSignBytes()
+	expected := `{"type":"desmos/MsgUnlinkChainAccount","value":{"chain_name":"cosmos","owner":"cosmos1cjf97gpzwmaf30pzvaargfgr884mpp5ak8f7ns","target":"cosmos1y54exmx84cqtasvjnskf9f63djuuj68p7hqf47"}}`
+	require.Equal(t, expected, string(actual))
+}
+
+func TestMsgUnlinkChainAccount_GetSigners(t *testing.T) {
+	addr, _ := sdk.AccAddressFromBech32(msgUnlinkChainAccount.Owner)
+	require.Equal(t, []sdk.AccAddress{addr}, msgUnlinkChainAccount.GetSigners())
 }
