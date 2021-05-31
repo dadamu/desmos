@@ -1,8 +1,12 @@
 package keeper_test
 
 import (
+	"time"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/desmos-labs/desmos/x/profiles/types"
 )
@@ -161,4 +165,105 @@ func (suite *KeeperTestSuite) Test_Params() {
 	suite.Require().NotNil(res)
 
 	suite.Require().Equal(types.DefaultParams(), res.Params)
+}
+
+func (suite *KeeperTestSuite) Test_ChainsLinks() {
+	suite.SetupTest()
+
+	priv1 := secp256k1.GenPrivKey()
+	priv2 := secp256k1.GenPrivKey()
+	storedLinks := []types.ChainLink{
+		types.NewChainLink(
+			priv1.PubKey().Address().String(),
+			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
+			types.NewChainConfig("cosmos", "cosmos"),
+			time.Time{},
+		),
+		types.NewChainLink(
+			priv2.PubKey().Address().String(),
+			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
+			types.NewChainConfig("cosmos", "cosmos"),
+			time.Time{},
+		),
+	}
+	for _, link := range storedLinks {
+		suite.k.StoreChainLink(suite.ctx, link)
+	}
+
+	usecases := []struct {
+		name      string
+		req       *types.QueryChainsLinksRequest
+		shouldErr bool
+		expLen    int
+	}{
+		{
+			name:      "valid request returns no error",
+			req:       &types.QueryChainsLinksRequest{},
+			shouldErr: false,
+			expLen:    2,
+		},
+	}
+
+	for _, uc := range usecases {
+		uc := uc
+		suite.Run(uc.name, func() {
+			res, err := suite.k.ChainsLinks(sdk.WrapSDKContext(suite.ctx), uc.req)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(res)
+			suite.Require().Equal(uc.expLen, len(res.ChainsLinks))
+		})
+	}
+}
+
+func (suite *KeeperTestSuite) Test_UserChainsLinks() {
+	suite.SetupTest()
+	profile := *suite.testData.profile
+
+	priv1 := secp256k1.GenPrivKey()
+	priv2 := secp256k1.GenPrivKey()
+	profile.ChainsLinks = []types.ChainLink{
+		types.NewChainLink(
+			priv1.PubKey().Address().String(),
+			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
+			types.NewChainConfig("cosmos", "cosmos"),
+			time.Time{},
+		),
+		types.NewChainLink(
+			priv2.PubKey().Address().String(),
+			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
+			types.NewChainConfig("cosmos", "cosmos"),
+			time.Time{},
+		),
+	}
+
+	err := suite.k.StoreProfile(suite.ctx, &profile)
+	suite.Require().NoError(err)
+
+	usecases := []struct {
+		name      string
+		req       *types.QueryUserChainsLinksRequest
+		shouldErr bool
+		expLen    int
+	}{
+		{
+			name: "valid request returns no error",
+			req: &types.QueryUserChainsLinksRequest{
+				User:       suite.testData.user,
+				Pagination: &sdkquery.PageRequest{},
+			},
+			shouldErr: false,
+			expLen:    2,
+		},
+	}
+
+	for _, uc := range usecases {
+		uc := uc
+		suite.Run(uc.name, func() {
+			res, err := suite.k.UserChainsLinks(sdk.WrapSDKContext(suite.ctx), uc.req)
+			suite.Require().NoError(err)
+			suite.Require().NotNil(res)
+			suite.T().Log(res.ChainsLinks)
+			suite.Require().Equal(uc.expLen, len(res.ChainsLinks))
+		})
+	}
 }
