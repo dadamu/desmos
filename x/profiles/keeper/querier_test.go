@@ -364,7 +364,7 @@ func (suite *KeeperTestSuite) Test_queryChainLinks() {
 	suite.Require().NoError(err)
 
 	for _, link := range storedLinks {
-		err := suite.k.StoreChainLink(suite.ctx, link, profile.GetAddress().String())
+		err := suite.k.StoreChainLink(suite.ctx, profile.GetAddress().String(), link)
 		suite.Require().NoError(err)
 	}
 

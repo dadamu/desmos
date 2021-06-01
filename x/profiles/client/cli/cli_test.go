@@ -482,16 +482,6 @@ func (s *IntegrationTestSuite) TestCmdQueryChainsLinks() {
 			},
 			expectErr: false,
 		},
-		{
-			name: "all links for a particular user is returned properly",
-			args: []string{
-				val.Address.String(),
-				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
-				fmt.Sprintf("--%s=1", flags.FlagPage),
-				fmt.Sprintf("--%s=2", flags.FlagLimit),
-			},
-			expectErr: false,
-		},
 	}
 
 	for _, tc := range testCases {

@@ -124,7 +124,7 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 		}
 
 		for _, link := range existentLinks {
-			err := suite.k.StoreChainLink(suite.ctx, link, existentProfiles[0].GetAddress().String())
+			err := suite.k.StoreChainLink(suite.ctx, existentProfiles[0].GetAddress().String(), link)
 			suite.Require().NoError(err)
 		}
 
@@ -216,7 +216,7 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 				),
 			},
 			existentProfiles: []*types.Profile{&validProfile},
-			expStoredLinks:   nil,
+			expStoredLinks:   []types.ChainLink{},
 		},
 	}
 
@@ -228,7 +228,7 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 				err := suite.k.StoreProfile(suite.ctx, acc)
 				suite.Require().NoError(err)
 				for _, link := range acc.ChainsLinks {
-					err := suite.k.StoreChainLink(suite.ctx, link, acc.GetAddress().String())
+					err := suite.k.StoreChainLink(suite.ctx, acc.GetAddress().String(), link)
 					suite.Require().NoError(err)
 				}
 			}

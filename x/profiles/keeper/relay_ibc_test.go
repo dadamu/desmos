@@ -170,6 +170,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 
 				err = suite.chainB.App.ProfileKeeper.StoreChainLink(
 					suite.chainB.GetContext(),
+					profile.GetAddress().String(),
 					types.NewChainLink(
 						suite.chainA.Account.GetAddress().String(),
 						types.NewProof(
@@ -183,7 +184,6 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 						),
 						time.Time{},
 					),
-					profile.GetAddress().String(),
 				)
 				suite.Require().NoError(err)
 			},
