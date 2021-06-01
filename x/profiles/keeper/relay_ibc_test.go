@@ -16,35 +16,201 @@ import (
 func (suite *KeeperTestSuite) TestOnRecvPacket() {
 	var (
 		channelA, channelB ibctesting.TestChannel
-		srcAddr            string
-		destAddr           string
-		srcSigHex          string
-		destSigHex         string
+		packetData         types.LinkChainAccountPacketData
 	)
 
 	tests := []struct {
-		name         string
-		malleate     func()
-		storeProfile func()
-		doubleStore  bool
-		expPass      bool
+		name        string
+		malleate    func(srcAddr, srcSigHex, destAddr, destSigHex string)
+		store       func()
+		doubleStore bool
+		expPass     bool
 	}{
 		{
-			name: "Create link from source chain successfully",
-			malleate: func() {
-				_, _, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-
-				channelA, channelB = suite.coordinator.CreateIBCProfilesChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
-				srcAddr = suite.chainA.Account.GetAddress().String()
-
-				srcSig, _ := suite.chainA.PrivKey.Sign([]byte(srcAddr))
-				srcSigHex = hex.EncodeToString(srcSig)
-
-				destAddr = suite.chainB.Account.GetAddress().String()
-				dstSig, _ := suite.chainB.PrivKey.Sign([]byte(destAddr))
-				destSigHex = hex.EncodeToString(dstSig)
+			name: "Invalid packet returns error",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					"",
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						srcAddr,
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						destAddr,
+					),
+				)
 			},
-			storeProfile: func() {
+			store:   func() {},
+			expPass: false,
+		},
+		{
+			name: "Verify source proof failed returns error",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					srcAddr,
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						"invalid",
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						destAddr,
+					),
+				)
+			},
+			store:   func() {},
+			expPass: false,
+		},
+		{
+			name: "Verify destination proof failed returns error",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					srcAddr,
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						srcAddr,
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						"invalid",
+					),
+				)
+			},
+			store:   func() {},
+			expPass: false,
+		},
+		{
+			name: "Destination has no profile returns error",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					srcAddr,
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						srcAddr,
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						destAddr,
+					),
+				)
+			},
+			store:   func() {},
+			expPass: false,
+		},
+		{
+			name: "Duplicated links returns error",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					srcAddr,
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						srcAddr,
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						destAddr,
+					),
+				)
+			},
+			store: func() {
+				addr := suite.chainB.Account.GetAddress()
+				baseAcc := authtypes.NewBaseAccountWithAddress(addr)
+				baseAcc.SetPubKey(suite.chainB.Account.GetPubKey())
+
+				profile, err := types.NewProfile(
+					"dtag",
+					"test-user",
+					"biography",
+					types.NewPictures(
+						"https://shorturl.at/adnX3",
+						"https://shorturl.at/cgpyF",
+					),
+					time.Time{},
+					baseAcc,
+				)
+				suite.Require().NoError(err)
+				err = suite.chainB.App.ProfileKeeper.StoreProfile(suite.chainB.GetContext(), profile)
+				suite.Require().NoError(err)
+
+				err = suite.chainB.App.ProfileKeeper.StoreChainLink(
+					suite.chainB.GetContext(),
+					types.NewChainLink(
+						suite.chainA.Account.GetAddress().String(),
+						types.NewProof(
+							suite.chainA.Account.GetPubKey(),
+							"signature",
+							"plain_text",
+						),
+						types.NewChainConfig(
+							"cosmos",
+							"cosmos",
+						),
+						time.Time{},
+					),
+				)
+				suite.Require().NoError(err)
+			},
+			expPass: true,
+		},
+		{
+			name: "Create link from source chain successfully",
+			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
+				packetData = types.NewLinkChainAccountPacketData(
+					srcAddr,
+					types.NewProof(
+						suite.chainA.Account.GetPubKey(),
+						srcSigHex,
+						srcAddr,
+					),
+					types.NewChainConfig(
+						"test",
+						"cosmos",
+					),
+					destAddr,
+					types.NewProof(
+						suite.chainB.Account.GetPubKey(),
+						destSigHex,
+						destAddr,
+					),
+				)
+			},
+			store: func() {
 				addr := suite.chainB.Account.GetAddress()
 				baseAcc := authtypes.NewBaseAccountWithAddress(addr)
 				baseAcc.SetPubKey(suite.chainB.Account.GetPubKey())
@@ -72,106 +238,32 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 		test := test
 		suite.Run(test.name, func() {
 			suite.SetupIBCTest()
-			test.malleate()
+			_, _, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
 
-			packetData := types.NewLinkChainAccountPacketData(
-				srcAddr,
-				types.NewProof(
-					suite.chainA.Account.GetPubKey(),
-					srcSigHex,
-					srcAddr,
-				),
-				types.NewChainConfig(
-					"test",
-					"cosmos",
-				),
-				destAddr,
-				types.NewProof(
-					suite.chainB.Account.GetPubKey(),
-					destSigHex,
-					destAddr,
-				),
-			)
+			channelA, channelB = suite.coordinator.CreateIBCProfilesChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
+			srcAddr := suite.chainA.Account.GetAddress().String()
+
+			srcSig, err := suite.chainA.PrivKey.Sign([]byte(srcAddr))
+			suite.NoError(err)
+			srcSigHex := hex.EncodeToString(srcSig)
+
+			destAddr := suite.chainB.Account.GetAddress().String()
+			dstSig, err := suite.chainB.PrivKey.Sign([]byte(destAddr))
+			suite.NoError(err)
+			destSigHex := hex.EncodeToString(dstSig)
+
+			test.malleate(srcAddr, srcSigHex, destAddr, destSigHex)
+
 			bz, _ := packetData.GetBytes()
 			packet := channeltypes.NewPacket(bz, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.NewHeight(0, 100), 0)
 
-			test.storeProfile()
-			_, err := suite.chainB.App.ProfileKeeper.OnRecvPacket(
+			test.store()
+			_, err = suite.chainB.App.ProfileKeeper.OnRecvPacket(
 				suite.chainB.GetContext(),
 				packet,
 				packetData,
 			)
 			if test.expPass {
-				suite.Require().NoError(err)
-			} else {
-				suite.Require().Error(err)
-			}
-		})
-	}
-}
-
-func (suite *KeeperTestSuite) TestOnAcknowledgementPacket() {
-	var (
-		channelA, channelB ibctesting.TestChannel
-		ack                channeltypes.Acknowledgement
-	)
-	tests := []struct {
-		name     string
-		malleate func()
-		expError error
-	}{
-		{
-			name: "Receive success ack returns no error",
-			malleate: func() {
-				_, _, connA, connB := suite.coordinator.SetupClientConnections(suite.chainA, suite.chainB, exported.Tendermint)
-				channelA, channelB = suite.coordinator.CreateIBCProfilesChannels(suite.chainA, suite.chainB, connA, connB, channeltypes.UNORDERED)
-				packetAck := types.LinkChainAccountPacketAck{SourceAddress: suite.chainA.Account.GetAddress().String()}
-				bz, _ := packetAck.Marshal()
-				ack = channeltypes.NewResultAcknowledgement(bz)
-			},
-			expError: nil,
-		},
-	}
-
-	for _, test := range tests {
-		test := test
-
-		suite.Run(test.name, func() {
-			suite.SetupIBCTest()
-			test.malleate()
-
-			srcAddr := suite.chainA.Account.GetAddress().String()
-			destAddr := suite.chainA.Account.GetAddress().String()
-
-			srcSig, err := suite.chainA.PrivKey.Sign([]byte(srcAddr))
-			suite.Require().NoError(err)
-			srcSigHex := hex.EncodeToString(srcSig)
-			destSig, err := suite.chainB.PrivKey.Sign([]byte(destAddr))
-			suite.Require().NoError(err)
-			destSigHex := hex.EncodeToString(destSig)
-
-			data := types.NewLinkChainAccountPacketData(
-				srcAddr,
-				types.NewProof(
-					suite.chainA.Account.GetPubKey(),
-					srcSigHex,
-					srcAddr,
-				),
-				types.NewChainConfig(
-					"test",
-					"cosmos",
-				),
-				destAddr,
-				types.NewProof(
-					suite.chainB.Account.GetPubKey(),
-					destSigHex,
-					destAddr,
-				),
-			)
-			bz, _ := data.GetBytes()
-			packet := channeltypes.NewPacket(bz, 1, channelA.PortID, channelA.ID, channelB.PortID, channelB.ID, clienttypes.NewHeight(0, 100), 0)
-			err = suite.chainA.App.ProfileKeeper.OnAcknowledgementPacket(suite.chainA.GetContext(), packet, data, ack)
-			if test.expError == nil {
 				suite.Require().NoError(err)
 			} else {
 				suite.Require().Error(err)

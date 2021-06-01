@@ -474,8 +474,18 @@ func (s *IntegrationTestSuite) TestCmdQueryChainsLinks() {
 		expectErr bool
 	}{
 		{
-			name: "the list of links is returned properly",
+			name: "all links is returned properly",
 			args: []string{
+				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
+				fmt.Sprintf("--%s=1", flags.FlagPage),
+				fmt.Sprintf("--%s=2", flags.FlagLimit),
+			},
+			expectErr: false,
+		},
+		{
+			name: "all links for a particular user is returned properly",
+			args: []string{
+				val.Address.String(),
 				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 				fmt.Sprintf("--%s=1", flags.FlagPage),
 				fmt.Sprintf("--%s=2", flags.FlagLimit),
@@ -498,47 +508,6 @@ func (s *IntegrationTestSuite) TestCmdQueryChainsLinks() {
 
 				var response types.QueryChainsLinksResponse
 				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
-			}
-		})
-	}
-}
-
-func (s *IntegrationTestSuite) TestCmdQueryUserChainsLinks() {
-	val := s.network.Validators[0]
-	dest, err := s.keyBase.Key("dest")
-	s.Require().NoError(err)
-	testCases := []struct {
-		name      string
-		args      []string
-		expectErr bool
-	}{
-		{
-			name: "the list of links is returned properly",
-			args: []string{
-				dest.GetAddress().String(),
-				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
-				fmt.Sprintf("--%s=1", flags.FlagPage),
-				fmt.Sprintf("--%s=2", flags.FlagLimit),
-			},
-			expectErr: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		tc := tc
-
-		s.Run(tc.name, func() {
-			cmd := cli.GetCmdQueryUserChainsLinks()
-			clientCtx := val.ClientCtx
-			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
-			if tc.expectErr {
-				s.Require().Error(err)
-			} else {
-				s.Require().NoError(err)
-
-				var response types.QueryChainsLinksResponse
-				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
-				s.T().Log(response)
 			}
 		})
 	}
