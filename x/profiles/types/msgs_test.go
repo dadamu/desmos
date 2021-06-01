@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"encoding/hex"
+	"fmt"
 	"testing"
 	"time"
 
@@ -928,6 +929,61 @@ func TestMsgLinkChainAccount_ValidateBasic(t *testing.T) {
 		expError error
 	}{
 		{
+			name: "Empty source address returns error",
+			msg: types.NewMsgLinkChainAccount(
+				"",
+				validMsg.SourceProof,
+				validMsg.SourceChainConfig,
+				validMsg.DestinationAddress,
+				validMsg.DestinationProof,
+			),
+			expError: fmt.Errorf("source address cannot be empty or blank"),
+		},
+		{
+			name: "Invalid source proof returns error",
+			msg: types.NewMsgLinkChainAccount(
+				validMsg.SourceAddress,
+				types.NewProof(secp256k1.GenPrivKey().PubKey(), "=", "wrong"),
+				validMsg.SourceChainConfig,
+				validMsg.DestinationAddress,
+				validMsg.DestinationProof,
+			),
+			expError: fmt.Errorf("failed to decode hex string of signature"),
+		},
+		{
+			name: "Invalid chain config returns error",
+			msg: types.NewMsgLinkChainAccount(
+				validMsg.SourceAddress,
+				validMsg.SourceProof,
+				types.NewChainConfig("", ""),
+				validMsg.DestinationAddress,
+				validMsg.DestinationProof,
+			),
+			expError: fmt.Errorf("chain name cannot be empty or blank"),
+		},
+		{
+			name: "Invalid destination address returns error",
+			msg: types.NewMsgLinkChainAccount(
+				validMsg.SourceAddress,
+				validMsg.SourceProof,
+				validMsg.SourceChainConfig,
+				"",
+				validMsg.DestinationProof,
+			),
+			expError: fmt.Errorf("invalid destination address: %s", ""),
+		},
+		{
+			name: "Invalid destination proof config returns error",
+			msg: types.NewMsgLinkChainAccount(
+				validMsg.SourceAddress,
+				validMsg.SourceProof,
+				validMsg.SourceChainConfig,
+				validMsg.DestinationAddress,
+				types.NewProof(secp256k1.GenPrivKey().PubKey(), "=", "wrong"),
+			),
+			expError: fmt.Errorf("failed to decode hex string of signature"),
+		},
+		{
 			name:     "No error message",
 			msg:      validMsg,
 			expError: nil,
@@ -983,6 +1039,33 @@ func TestMsgUnlinkChainAccount_ValidateBasic(t *testing.T) {
 		msg      *types.MsgUnlinkChainAccount
 		expError error
 	}{
+		{
+			name: "Invalid owner returns error",
+			msg: types.NewMsgUnlinkChainAccount(
+				"",
+				"cosmos",
+				"cosmos1y54exmx84cqtasvjnskf9f63djuuj68p7hqf47",
+			),
+			expError: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid owner"),
+		},
+		{
+			name: "Invalid chain name returns error",
+			msg: types.NewMsgUnlinkChainAccount(
+				"cosmos1cjf97gpzwmaf30pzvaargfgr884mpp5ak8f7ns",
+				"",
+				"cosmos1y54exmx84cqtasvjnskf9f63djuuj68p7hqf47",
+			),
+			expError: sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "chain name cannot be empty or blank"),
+		},
+		{
+			name: "Invalid target returns error",
+			msg: types.NewMsgUnlinkChainAccount(
+				"cosmos1cjf97gpzwmaf30pzvaargfgr884mpp5ak8f7ns",
+				"cosmos",
+				"",
+			),
+			expError: sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid target"),
+		},
 		{
 			name:     "No error message",
 			msg:      msgUnlinkChainAccount,

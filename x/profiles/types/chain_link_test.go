@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"encoding/hex"
+	"fmt"
 	"testing"
 	"time"
 
@@ -29,7 +30,25 @@ func TestProof_Validate(t *testing.T) {
 		expError error
 	}{
 		{
-			name: "correct proof returns no error",
+			name: "Invalid signature format returns error",
+			proof: types.NewProof(
+				pubKey,
+				"=",
+				plainText,
+			),
+			expError: fmt.Errorf("failed to decode hex string of signature"),
+		},
+		{
+			name: "Empty plain text returns error",
+			proof: types.NewProof(
+				pubKey,
+				sigHex,
+				"",
+			),
+			expError: fmt.Errorf("plain text can not be empty or blank"),
+		},
+		{
+			name: "Correct proof returns no error",
 			proof: types.NewProof(
 				pubKey,
 				sigHex,
@@ -59,7 +78,16 @@ func TestProof_Verify(t *testing.T) {
 		expError error
 	}{
 		{
-			name: "correct proof returns no error",
+			name: "Verify proof fails returns error",
+			proof: types.NewProof(
+				pubKey,
+				sigHex,
+				"wrong",
+			),
+			expError: fmt.Errorf("failed to verify the signature"),
+		},
+		{
+			name: "Correct proof returns no error",
 			proof: types.NewProof(
 				pubKey,
 				sigHex,
@@ -83,7 +111,15 @@ func TestChainConfig_Validate(t *testing.T) {
 		expError    error
 	}{
 		{
-			name: "correct chain config returns no error",
+			name: "Empty chain name returns error",
+			chainConfig: types.NewChainConfig(
+				"",
+				"test",
+			),
+			expError: fmt.Errorf("chain name cannot be empty or blank"),
+		},
+		{
+			name: "Correct chain config returns no error",
 			chainConfig: types.NewChainConfig(
 				"test",
 				"test",
@@ -115,7 +151,37 @@ func TestChainLink_Validate(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "correct chain link returns no error",
+			name: "Empty address returns error",
+			chainLink: types.NewChainLink(
+				"",
+				types.NewProof(pubKey, sigHex, plainText),
+				types.NewChainConfig("cosmos", "cosmos"),
+				time.Time{},
+			),
+			expError: fmt.Errorf("address cannot be empty or blank"),
+		},
+		{
+			name: "Invalid Proof returns error",
+			chainLink: types.NewChainLink(
+				addr,
+				types.NewProof(pubKey, "=", plainText),
+				types.NewChainConfig("cosmos", "cosmos"),
+				time.Time{},
+			),
+			expError: fmt.Errorf("failed to decode hex string of signature"),
+		},
+		{
+			name: "Invalid chain config returns error",
+			chainLink: types.NewChainLink(
+				addr,
+				types.NewProof(pubKey, sigHex, plainText),
+				types.NewChainConfig("", "cosmos"),
+				time.Time{},
+			),
+			expError: fmt.Errorf("chain name cannot be empty or blank"),
+		},
+		{
+			name: "Correct chain link returns no error",
 			chainLink: types.NewChainLink(
 				addr,
 				types.NewProof(pubKey, sigHex, plainText),
