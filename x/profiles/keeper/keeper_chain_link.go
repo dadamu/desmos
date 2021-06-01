@@ -5,17 +5,31 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/desmos-labs/desmos/x/profiles/types"
 )
 
-// StoreChainLink sotres the given chain link inside the current context.
+// StoreChainLink stores the given chain link inside the current context.
 // It assumes that the given chain link has already been validated.
-func (k Keeper) StoreChainLink(ctx sdk.Context, link types.ChainLink) error {
-
+func (k Keeper) StoreChainLink(ctx sdk.Context, link types.ChainLink, destinationAddress string) error {
 	if _, found := k.GetChainLink(ctx, link.ChainConfig.Name, link.Address); found {
 		return fmt.Errorf("chain link already exists")
+	}
+
+	// Check if address has the profile
+	profile, found, err := k.GetProfile(ctx, destinationAddress)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return fmt.Errorf("address does not have any profile")
+	}
+	// Store chain link to the profile
+	profile.ChainsLinks = append(profile.ChainsLinks, link)
+	if err := k.StoreProfile(ctx, profile); err != nil {
+		return err
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -25,15 +39,15 @@ func (k Keeper) StoreChainLink(ctx sdk.Context, link types.ChainLink) error {
 }
 
 // GetChainLink returns the chain link corresponding to the given address and the given chain name inside the current context.
-func (k Keeper) GetChainLink(ctx sdk.Context, address string, chainName string) (link types.ChainLink, found bool) {
+func (k Keeper) GetChainLink(ctx sdk.Context, chainName string, address string) (link types.ChainLink, found bool) {
 	store := ctx.KVStore((k.storeKey))
 
-	bz := store.Get(types.ChainsLinksStoreKey(address, chainName))
-	if bz != nil {
-		k.cdc.MustUnmarshalBinaryBare(bz, &link)
-		return link, true
+	bz := store.Get(types.ChainsLinksStoreKey(chainName, address))
+	if bz == nil {
+		return types.ChainLink{}, false
 	}
-	return types.ChainLink{}, false
+	k.cdc.MustUnmarshalBinaryBare(bz, &link)
+	return link, true
 }
 
 // GetAllChainsLinks returns a list of all the chains links inside the given context.
@@ -94,8 +108,41 @@ func (k Keeper) GetUserChainsLinks(ctx sdk.Context, address string, page int, li
 
 // DeleteLink allows to delete a link associated with the given address and chain name inside the current context.
 // It assumes that the related link exists.
-func (k Keeper) DeleteChainLink(ctx sdk.Context, chainName string, address string) {
+func (k Keeper) DeleteChainLink(ctx sdk.Context, owner, chainName, target string) error {
+	// Check if address has the profile and get the profile
+	profile, found, err := k.GetProfile(ctx, owner)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, ("non existent profile on owner address"))
+	}
+
+	isTargetExist := false
+	newChainsLinks := []types.ChainLink{}
+	// Try to find the target link
+	for _, link := range profile.ChainsLinks {
+		currChainName := link.ChainConfig.Name
+		currAddr := link.Address
+		if currChainName == chainName && currAddr == target {
+			isTargetExist = true
+			continue
+		}
+		newChainsLinks = append(newChainsLinks, link)
+	}
+
+	if !isTargetExist {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, ("non existent target chain link in the profile"))
+	}
+	// Update profile status
+	profile.ChainsLinks = newChainsLinks
+	err = k.StoreProfile(ctx, profile)
+	if err != nil {
+		return err
+	}
+
 	store := ctx.KVStore(k.storeKey)
-	key := types.ChainsLinksStoreKey(chainName, address)
+	key := types.ChainsLinksStoreKey(chainName, target)
 	store.Delete(key)
+	return nil
 }
