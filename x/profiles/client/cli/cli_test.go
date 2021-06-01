@@ -6,6 +6,9 @@ import (
 	"time"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/go-bip39"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
@@ -27,6 +30,7 @@ type IntegrationTestSuite struct {
 
 	cfg     network.Config
 	network *network.Network
+	keyBase keyring.Keyring
 }
 
 func TestIntegrationTestSuite(t *testing.T) {
@@ -61,6 +65,41 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	authData.Accounts = append(authData.Accounts, accountAny)
+
+	// Setting for inter chain cli test
+	s.keyBase = generateMemoryKeybase()
+	srcKey, err := s.keyBase.Key("src")
+	s.Require().NoError(err)
+	srcBaseAcc := authtypes.NewBaseAccountWithAddress(srcKey.GetAddress())
+	srcAccountAny, err := codectypes.NewAnyWithValue(srcBaseAcc)
+	s.Require().NoError(err)
+	authData.Accounts = append(authData.Accounts, srcAccountAny)
+
+	src2Key, err := s.keyBase.Key("src2")
+	s.Require().NoError(err)
+	src2BaseAcc := authtypes.NewBaseAccountWithAddress(src2Key.GetAddress())
+	src2AccountAny, err := codectypes.NewAnyWithValue(src2BaseAcc)
+	s.Require().NoError(err)
+	authData.Accounts = append(authData.Accounts, src2AccountAny)
+
+	destKey, err := s.keyBase.Key("dest")
+	s.Require().NoError(err)
+
+	destBaseAcc := authtypes.NewBaseAccountWithAddress(destKey.GetAddress())
+	destAccount, err := types.NewProfile(
+		"dtag2",
+		"nickname",
+		"bio",
+		types.Pictures{},
+		time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+		destBaseAcc,
+	)
+
+	s.Require().NoError(err)
+	destAccountAny, err := codectypes.NewAnyWithValue(destAccount)
+	s.Require().NoError(err)
+	authData.Accounts = append(authData.Accounts, destAccountAny)
+
 	authDataBz, err := cfg.Codec.MarshalJSON(&authData)
 	s.Require().NoError(err)
 	genesisState[authtypes.ModuleName] = authDataBz
@@ -109,6 +148,26 @@ func (s *IntegrationTestSuite) SetupSuite() {
 func (s *IntegrationTestSuite) TearDownSuite() {
 	s.T().Log("tearing down integration test suite")
 	s.network.Cleanup()
+}
+
+func generateMemoryKeybase() keyring.Keyring {
+	keyBase := keyring.NewInMemory()
+	keyringAlgos, _ := keyBase.SupportedAlgorithms()
+	algo, _ := keyring.NewSigningAlgoFromString("secp256k1", keyringAlgos)
+	hdPath := hd.CreateHDPath(0, 0, 0).String()
+
+	srcEntropySeed, _ := bip39.NewEntropy(256)
+	src2EntropySeed, _ := bip39.NewEntropy(256)
+	destEntropySeed, _ := bip39.NewEntropy(256)
+
+	srcMnemonic, _ := bip39.NewMnemonic(srcEntropySeed)
+	src2Mnemonic, _ := bip39.NewMnemonic(src2EntropySeed)
+	destMnemonic, _ := bip39.NewMnemonic(destEntropySeed)
+
+	keyBase.NewAccount("src", srcMnemonic, "", hdPath, algo)
+	keyBase.NewAccount("src2", src2Mnemonic, "", hdPath, algo)
+	keyBase.NewAccount("dest", destMnemonic, "", hdPath, algo)
+	return keyBase
 }
 
 // ___________________________________________________________________________________________________________________
@@ -401,6 +460,85 @@ func (s *IntegrationTestSuite) TestCmdQueryUserBlocks() {
 				var response types.QueryUserBlocksResponse
 				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
 				s.Require().Equal(tc.expectedOutput, response)
+			}
+		})
+	}
+}
+
+func (s *IntegrationTestSuite) TestCmdQueryChainsLinks() {
+	val := s.network.Validators[0]
+
+	testCases := []struct {
+		name      string
+		args      []string
+		expectErr bool
+	}{
+		{
+			name: "the list of links is returned properly",
+			args: []string{
+				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
+				fmt.Sprintf("--%s=1", flags.FlagPage),
+				fmt.Sprintf("--%s=2", flags.FlagLimit),
+			},
+			expectErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		s.Run(tc.name, func() {
+			cmd := cli.GetCmdQueryChainsLinks()
+			clientCtx := val.ClientCtx
+			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
+			if tc.expectErr {
+				s.Require().Error(err)
+			} else {
+				s.Require().NoError(err)
+
+				var response types.QueryChainsLinksResponse
+				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
+			}
+		})
+	}
+}
+
+func (s *IntegrationTestSuite) TestCmdQueryUserChainsLinks() {
+	val := s.network.Validators[0]
+	dest, err := s.keyBase.Key("dest")
+	s.Require().NoError(err)
+	testCases := []struct {
+		name      string
+		args      []string
+		expectErr bool
+	}{
+		{
+			name: "the list of links is returned properly",
+			args: []string{
+				dest.GetAddress().String(),
+				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
+				fmt.Sprintf("--%s=1", flags.FlagPage),
+				fmt.Sprintf("--%s=2", flags.FlagLimit),
+			},
+			expectErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		s.Run(tc.name, func() {
+			cmd := cli.GetCmdQueryUserChainsLinks()
+			clientCtx := val.ClientCtx
+			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
+			if tc.expectErr {
+				s.Require().Error(err)
+			} else {
+				s.Require().NoError(err)
+
+				var response types.QueryChainsLinksResponse
+				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
+				s.T().Log(response)
 			}
 		})
 	}
@@ -1039,6 +1177,89 @@ func (s *IntegrationTestSuite) TestCmdUnblockUser() {
 			} else {
 				s.Require().NoError(err)
 				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), tc.respType), out.String())
+			}
+		})
+	}
+}
+
+func (s *IntegrationTestSuite) TestCmdLinkChainAccount() {
+	cliCtx := s.network.Validators[0].ClientCtx
+	cliCtx.Keyring = s.keyBase
+	testCases := []struct {
+		name     string
+		args     []string
+		expErr   bool
+		respType proto.Message
+	}{
+		{
+			name: "valid request works properly",
+			args: []string{
+				"dest",
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, "src"),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+			},
+			expErr:   false,
+			respType: &sdk.TxResponse{},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		s.Run(tc.name, func() {
+			cmd := cli.GetCmdLinkChainAccount()
+			out, err := clitestutil.ExecTestCLICmd(cliCtx, cmd, tc.args)
+
+			if tc.expErr {
+				s.Require().Error(err)
+			} else {
+				s.Require().NoError(err)
+				s.Require().NoError(cliCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), tc.respType), out.String())
+			}
+		})
+	}
+}
+
+func (s *IntegrationTestSuite) TestCmdUnlinkChainAccount() {
+	cliCtx := s.network.Validators[0].ClientCtx
+	cliCtx.Keyring = s.keyBase
+	src, err := s.keyBase.Key("src")
+	s.Require().NoError(err)
+	testCases := []struct {
+		name     string
+		args     []string
+		expErr   bool
+		respType proto.Message
+	}{
+		{
+			name: "valid request works properly",
+			args: []string{
+				"cosmos",
+				src.GetAddress().String(),
+				fmt.Sprintf("--%s=%s", flags.FlagFrom, "dest"),
+				fmt.Sprintf("--%s=true", flags.FlagSkipConfirmation),
+				fmt.Sprintf("--%s=%s", flags.FlagBroadcastMode, flags.BroadcastBlock),
+				fmt.Sprintf("--%s=%s", flags.FlagFees, sdk.NewCoins(sdk.NewCoin(s.cfg.BondDenom, sdk.NewInt(10))).String()),
+			},
+			expErr:   false,
+			respType: &sdk.TxResponse{},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+
+		s.Run(tc.name, func() {
+			cmd := cli.GetCmdUnlinkChainAccount()
+			out, err := clitestutil.ExecTestCLICmd(cliCtx, cmd, tc.args)
+
+			if tc.expErr {
+				s.Require().Error(err)
+			} else {
+				s.Require().NoError(err)
+				s.Require().NoError(cliCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), tc.respType), out.String())
 			}
 		})
 	}
