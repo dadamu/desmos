@@ -183,6 +183,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 						),
 						time.Time{},
 					),
+					profile.GetAddress().String(),
 				)
 				suite.Require().NoError(err)
 			},

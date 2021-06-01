@@ -181,12 +181,22 @@ func TestChainLink_Validate(t *testing.T) {
 			expError: fmt.Errorf("chain name cannot be empty or blank"),
 		},
 		{
-			name: "Correct chain link returns no error",
+			name: "invalid time returns no error",
 			chainLink: types.NewChainLink(
 				addr,
 				types.NewProof(pubKey, sigHex, plainText),
 				types.NewChainConfig("cosmos", "cosmos"),
 				time.Time{},
+			),
+			expError: fmt.Errorf("createion time cannot be zero"),
+		},
+		{
+			name: "Correct chain link returns no error",
+			chainLink: types.NewChainLink(
+				addr,
+				types.NewProof(pubKey, sigHex, plainText),
+				types.NewChainConfig("cosmos", "cosmos"),
+				time.Now(),
 			),
 			expError: nil,
 		},

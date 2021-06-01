@@ -169,6 +169,9 @@ func (suite *KeeperTestSuite) Test_Params() {
 
 func (suite *KeeperTestSuite) Test_ChainsLinks() {
 	suite.SetupTest()
+	profile := suite.testData.profile
+
+	suite.k.StoreProfile(suite.ctx, profile)
 
 	priv1 := secp256k1.GenPrivKey()
 	priv2 := secp256k1.GenPrivKey()
@@ -187,7 +190,8 @@ func (suite *KeeperTestSuite) Test_ChainsLinks() {
 		),
 	}
 	for _, link := range storedLinks {
-		suite.k.StoreChainLink(suite.ctx, link)
+		err := suite.k.StoreChainLink(suite.ctx, link, profile.GetAddress().String())
+		suite.Require().NoError(err)
 	}
 
 	usecases := []struct {

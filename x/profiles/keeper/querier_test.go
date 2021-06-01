@@ -359,9 +359,13 @@ func (suite *KeeperTestSuite) Test_queryChainLinks() {
 			suite.testData.profile.CreationDate,
 		),
 	}
+	profile := suite.testData.profile
+	err := suite.k.StoreProfile(suite.ctx, profile)
+	suite.Require().NoError(err)
 
 	for _, link := range storedLinks {
-		suite.k.StoreChainLink(suite.ctx, link)
+		err := suite.k.StoreChainLink(suite.ctx, link, profile.GetAddress().String())
+		suite.Require().NoError(err)
 	}
 
 	tests := []struct {
