@@ -84,9 +84,9 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 				existentLinks = nil
 			},
 			msg: types.NewMsgLinkChainAccount(
-				srcAddr,
+				types.NewAddress(srcAddr, "cosmos"),
 				types.NewProof(srcPubKey, srcSigHex, srcAddr),
-				types.NewChainConfig("cosmos", sdk.GetConfig().GetBech32AccountAddrPrefix()),
+				types.NewChainConfig("cosmos"),
 				destAddr,
 				types.NewProof(destPubKey, destSigHex, destAddr),
 			),
@@ -102,9 +102,9 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 			},
 			expStoredLinks: []types.ChainLink{
 				types.NewChainLink(
-					srcAddr,
+					types.NewAddress(srcAddr, "cosmos"),
 					types.NewProof(srcPubKey, srcSigHex, srcAddr),
-					types.NewChainConfig("cosmos", sdk.GetConfig().GetBech32AccountAddrPrefix()),
+					types.NewChainConfig("cosmos"),
 					blockTime,
 				),
 			},
@@ -183,7 +183,7 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 	srcSigHex := hex.EncodeToString(srcSig)
 
 	link := types.NewChainLink(
-		srcAddr,
+		types.NewAddress(srcAddr, "cosmos"),
 		types.NewProof(srcPubKey, srcSigHex, srcAddr),
 		types.NewChainConfig("cosmos"),
 		time.Time{},

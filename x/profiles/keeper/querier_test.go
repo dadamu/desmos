@@ -347,15 +347,15 @@ func (suite *KeeperTestSuite) Test_queryChainLinks() {
 	priv2 := &secp256k1.PrivKey{Key: []byte{180, 171, 242, 150, 175, 157, 177, 148, 120, 188, 6, 166, 212, 140, 134, 179, 253, 241, 90, 123, 47, 34, 152, 203, 209, 96, 89, 89, 211, 187, 79, 27}}
 	storedLinks := []types.ChainLink{
 		types.NewChainLink(
-			priv1.PubKey().Address().String(),
+			types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
 			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			suite.testData.profile.CreationDate,
 		),
 		types.NewChainLink(
-			priv2.PubKey().Address().String(),
+			types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
 			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			suite.testData.profile.CreationDate,
 		),
 	}
@@ -378,15 +378,15 @@ func (suite *KeeperTestSuite) Test_queryChainLinks() {
 			params: types.QueryChainsLinksParams{},
 			expResponse: []types.ChainLink{
 				types.NewChainLink(
-					priv1.PubKey().Address().String(),
+					types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
 					types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-					types.NewChainConfig("cosmos", "cosmos"),
+					types.NewChainConfig("cosmos"),
 					suite.testData.profile.CreationDate,
 				),
 				types.NewChainLink(
-					priv2.PubKey().Address().String(),
+					types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
 					types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-					types.NewChainConfig("cosmos", "cosmos"),
+					types.NewChainConfig("cosmos"),
 					suite.testData.profile.CreationDate,
 				),
 			},

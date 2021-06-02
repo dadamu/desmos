@@ -178,13 +178,13 @@ func (suite *KeeperTestSuite) Test_ChainsLinks() {
 		types.NewChainLink(
 			priv1.PubKey().Address().String(),
 			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			time.Time{},
 		),
 		types.NewChainLink(
 			priv2.PubKey().Address().String(),
 			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			time.Time{},
 		),
 	}

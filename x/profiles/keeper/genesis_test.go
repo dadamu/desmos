@@ -202,13 +202,13 @@ func (suite *KeeperTestSuite) Test_InitGenesis() {
 		types.NewChainLink(
 			srcAddr,
 			types.NewProof(srcPubKey, srcSigHex, srcAddr),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 		),
 		types.NewChainLink(
 			srcAddr,
 			types.NewProof(srcPubKey, srcSigHex, srcAddr),
-			types.NewChainConfig("cosmos", "cosmos"),
+			types.NewChainConfig("cosmos"),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 		),
 	}

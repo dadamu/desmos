@@ -7,9 +7,8 @@ import (
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/desmos-labs/desmos/x/profiles/types"
 
@@ -903,9 +902,9 @@ func generateMsgLinkChainAccount(t *testing.T) *types.MsgLinkChainAccount {
 	destSigHex := hex.EncodeToString(destSig)
 
 	return types.NewMsgLinkChainAccount(
-		srcAddr,
+		types.NewAddress(srcAddr, "cosmos"),
 		types.NewProof(srcPubKey, srcSigHex, srcPlainText),
-		types.NewChainConfig("cosmos", "cosmos"),
+		types.NewChainConfig("cosmos"),
 		destAddr,
 		types.NewProof(destPubKey, destSigHex, destPlainText),
 	)
@@ -931,13 +930,13 @@ func TestMsgLinkChainAccount_ValidateBasic(t *testing.T) {
 		{
 			name: "Empty source address returns error",
 			msg: types.NewMsgLinkChainAccount(
-				"",
+				types.Address{},
 				validMsg.SourceProof,
 				validMsg.SourceChainConfig,
 				validMsg.DestinationAddress,
 				validMsg.DestinationProof,
 			),
-			expError: fmt.Errorf("source address cannot be empty or blank"),
+			expError: fmt.Errorf("unknown address type"),
 		},
 		{
 			name: "Invalid source proof returns error",
@@ -955,7 +954,7 @@ func TestMsgLinkChainAccount_ValidateBasic(t *testing.T) {
 			msg: types.NewMsgLinkChainAccount(
 				validMsg.SourceAddress,
 				validMsg.SourceProof,
-				types.NewChainConfig("", ""),
+				types.NewChainConfig(""),
 				validMsg.DestinationAddress,
 				validMsg.DestinationProof,
 			),
@@ -1013,7 +1012,7 @@ func TestMsgLinkChainAccount_GetSignBytes(t *testing.T) {
 
 func TestMsgLinkChainAccount_GetSigners(t *testing.T) {
 	msg := generateMsgLinkChainAccount(t)
-	addr, _ := sdk.AccAddressFromBech32(msg.SourceAddress)
+	addr, _ := sdk.AccAddressFromBech32(msg.SourceAddress.GetValue())
 	require.Equal(t, []sdk.AccAddress{addr}, msg.GetSigners())
 }
 
