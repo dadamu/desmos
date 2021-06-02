@@ -200,13 +200,13 @@ func (suite *KeeperTestSuite) Test_InitGenesis() {
 
 	profileDoubleLinks.ChainsLinks = []types.ChainLink{
 		types.NewChainLink(
-			srcAddr,
+			types.NewAddress(srcAddr, "cosmos"),
 			types.NewProof(srcPubKey, srcSigHex, srcAddr),
 			types.NewChainConfig("cosmos"),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),
 		),
 		types.NewChainLink(
-			srcAddr,
+			types.NewAddress(srcAddr, "cosmos"),
 			types.NewProof(srcPubKey, srcSigHex, srcAddr),
 			types.NewChainConfig("cosmos"),
 			time.Date(2020, 1, 2, 00, 00, 00, 000, time.UTC),

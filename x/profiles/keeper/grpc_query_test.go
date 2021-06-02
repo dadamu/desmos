@@ -176,13 +176,13 @@ func (suite *KeeperTestSuite) Test_ChainsLinks() {
 	priv2 := secp256k1.GenPrivKey()
 	storedLinks := []types.ChainLink{
 		types.NewChainLink(
-			priv1.PubKey().Address().String(),
+			types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
 			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
 			types.NewChainConfig("cosmos"),
 			time.Time{},
 		),
 		types.NewChainLink(
-			priv2.PubKey().Address().String(),
+			types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
 			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
 			types.NewChainConfig("cosmos"),
 			time.Time{},
