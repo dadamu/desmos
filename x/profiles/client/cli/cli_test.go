@@ -465,44 +465,6 @@ func (s *IntegrationTestSuite) TestCmdQueryUserBlocks() {
 	}
 }
 
-func (s *IntegrationTestSuite) TestCmdQueryChainsLinks() {
-	val := s.network.Validators[0]
-
-	testCases := []struct {
-		name      string
-		args      []string
-		expectErr bool
-	}{
-		{
-			name: "all links is returned properly",
-			args: []string{
-				fmt.Sprintf("--%s=json", tmcli.OutputFlag),
-				fmt.Sprintf("--%s=1", flags.FlagPage),
-				fmt.Sprintf("--%s=2", flags.FlagLimit),
-			},
-			expectErr: false,
-		},
-	}
-
-	for _, tc := range testCases {
-		tc := tc
-
-		s.Run(tc.name, func() {
-			cmd := cli.GetCmdQueryChainsLinks()
-			clientCtx := val.ClientCtx
-			out, err := clitestutil.ExecTestCLICmd(clientCtx, cmd, tc.args)
-			if tc.expectErr {
-				s.Require().Error(err)
-			} else {
-				s.Require().NoError(err)
-
-				var response types.QueryChainsLinksResponse
-				s.Require().NoError(clientCtx.JSONMarshaler.UnmarshalJSON(out.Bytes(), &response), out.String())
-			}
-		})
-	}
-}
-
 // ___________________________________________________________________________________________________________________
 
 func (s *IntegrationTestSuite) TestCmdSaveProfile() {

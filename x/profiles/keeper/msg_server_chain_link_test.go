@@ -44,12 +44,11 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 	blockTime := suite.testData.profile.CreationDate
 
 	tests := []struct {
-		name           string
-		malleate       func()
-		msg            *types.MsgLinkChainAccount
-		shouldErr      bool
-		expEvents      sdk.Events
-		expStoredLinks []types.ChainLink
+		name      string
+		malleate  func()
+		msg       *types.MsgLinkChainAccount
+		shouldErr bool
+		expEvents sdk.Events
 	}{
 		{
 			name: "Create link successfully",
@@ -100,14 +99,6 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 					sdk.NewAttribute(types.AttributeChainLinkCreated, blockTime.Format(time.RFC3339Nano)),
 				),
 			},
-			expStoredLinks: []types.ChainLink{
-				types.NewChainLink(
-					types.NewAddress(srcAddr, "cosmos"),
-					types.NewProof(srcPubKey, srcSigHex, srcAddr),
-					types.NewChainConfig("cosmos"),
-					blockTime,
-				),
-			},
 		},
 	}
 
@@ -138,33 +129,14 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 		} else {
 			suite.Require().NoError(err)
 
-			stored := suite.k.GetAllChainsLinks(suite.ctx)
+			stored := suite.k.GetAllAccountsByChainLink(suite.ctx)
 			suite.Require().NotEmpty(stored)
 
-			suite.Require().True(checkAllLinkContains(test.expStoredLinks, stored))
-
-			profile, found, err := suite.k.GetProfile(suite.ctx, destAddr)
+			_, found, err := suite.k.GetProfile(suite.ctx, destAddr)
 			suite.Require().NoError(err)
 			suite.Require().True(found)
-
-			suite.Require().NotEmpty(profile.ChainsLinks)
-			suite.Require().True(checkAllLinkContains(test.expStoredLinks, profile.ChainsLinks))
 		}
 	}
-}
-
-func checkAllLinkContains(expStoredLinks []types.ChainLink, storedLinks []types.ChainLink) bool {
-	allContain := false
-	for _, link := range storedLinks {
-		allContain = false
-		for _, expLink := range expStoredLinks {
-			if link.Equal(expLink) {
-				allContain = true
-				break
-			}
-		}
-	}
-	return allContain
 }
 
 func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
@@ -201,11 +173,10 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 		expEvents        sdk.Events
 		existentProfiles []*types.Profile
 		existentLinks    []types.ChainLink
-		expStoredLinks   []types.ChainLink
 	}{
 		{
 			name:      "No error message",
-			msg:       types.NewMsgUnlinkChainAccount(suite.testData.user, "cosmos", srcAddr),
+			msg:       types.NewMsgUnlinkChainAccount(validProfile.GetAddress().String(), "cosmos", srcAddr),
 			shouldErr: false,
 			expEvents: sdk.Events{
 				sdk.NewEvent(
@@ -216,7 +187,6 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 				),
 			},
 			existentProfiles: []*types.Profile{&validProfile},
-			expStoredLinks:   []types.ChainLink{},
 		},
 	}
 
@@ -242,9 +212,6 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 				suite.Require().Error(err)
 			} else {
 				suite.Require().NoError(err)
-
-				stored := suite.k.GetAllChainsLinks(suite.ctx)
-				suite.Require().Equal(test.expStoredLinks, stored)
 
 				profile, found, err := suite.k.GetProfile(suite.ctx, suite.testData.user)
 				suite.Require().NoError(err)

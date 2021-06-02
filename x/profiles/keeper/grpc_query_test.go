@@ -1,10 +1,7 @@
 package keeper_test
 
 import (
-	"time"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/desmos-labs/desmos/x/profiles/types"
@@ -164,56 +161,4 @@ func (suite *KeeperTestSuite) Test_Params() {
 	suite.Require().NotNil(res)
 
 	suite.Require().Equal(types.DefaultParams(), res.Params)
-}
-
-func (suite *KeeperTestSuite) Test_ChainsLinks() {
-	suite.SetupTest()
-	profile := suite.testData.profile
-
-	suite.k.StoreProfile(suite.ctx, profile)
-
-	priv1 := secp256k1.GenPrivKey()
-	priv2 := secp256k1.GenPrivKey()
-	storedLinks := []types.ChainLink{
-		types.NewChainLink(
-			types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
-			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos"),
-			time.Time{},
-		),
-		types.NewChainLink(
-			types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
-			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos"),
-			time.Time{},
-		),
-	}
-	for _, link := range storedLinks {
-		err := suite.k.StoreChainLink(suite.ctx, profile.GetAddress().String(), link)
-		suite.Require().NoError(err)
-	}
-
-	usecases := []struct {
-		name      string
-		req       *types.QueryChainsLinksRequest
-		shouldErr bool
-		expLen    int
-	}{
-		{
-			name:      "valid request returns no error",
-			req:       &types.QueryChainsLinksRequest{},
-			shouldErr: false,
-			expLen:    2,
-		},
-	}
-
-	for _, uc := range usecases {
-		uc := uc
-		suite.Run(uc.name, func() {
-			res, err := suite.k.ChainsLinks(sdk.WrapSDKContext(suite.ctx), uc.req)
-			suite.Require().NoError(err)
-			suite.Require().NotNil(res)
-			suite.Require().Equal(uc.expLen, len(res.ChainsLinks))
-		})
-	}
 }
