@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -337,74 +336,6 @@ func (suite *KeeperTestSuite) Test_queryUserBlocks() {
 				suite.Require().Equal(test.expErr.Error(), err.Error())
 				suite.Require().Nil(result)
 			}
-		})
-	}
-}
-
-func (suite *KeeperTestSuite) Test_queryChainLinks() {
-	suite.SetupTest()
-	priv1 := &secp256k1.PrivKey{Key: []byte{179, 171, 242, 150, 175, 157, 177, 148, 120, 188, 6, 166, 212, 140, 134, 179, 253, 241, 90, 123, 47, 34, 152, 203, 209, 96, 89, 89, 211, 187, 79, 27}}
-	priv2 := &secp256k1.PrivKey{Key: []byte{180, 171, 242, 150, 175, 157, 177, 148, 120, 188, 6, 166, 212, 140, 134, 179, 253, 241, 90, 123, 47, 34, 152, 203, 209, 96, 89, 89, 211, 187, 79, 27}}
-	storedLinks := []types.ChainLink{
-		types.NewChainLink(
-			types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
-			types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos"),
-			suite.testData.profile.CreationDate,
-		),
-		types.NewChainLink(
-			types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
-			types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-			types.NewChainConfig("cosmos"),
-			suite.testData.profile.CreationDate,
-		),
-	}
-	profile := suite.testData.profile
-	err := suite.k.StoreProfile(suite.ctx, profile)
-	suite.Require().NoError(err)
-
-	for _, link := range storedLinks {
-		err := suite.k.StoreChainLink(suite.ctx, profile.GetAddress().String(), link)
-		suite.Require().NoError(err)
-	}
-
-	tests := []struct {
-		name        string
-		params      types.QueryChainsLinksParams
-		expResponse []types.ChainLink
-	}{
-		{
-			name:   "Empty params returns all",
-			params: types.QueryChainsLinksParams{},
-			expResponse: []types.ChainLink{
-				types.NewChainLink(
-					types.NewAddress(priv1.PubKey().Address().String(), "cosmos"),
-					types.NewProof(priv1.PubKey(), "signature", "plain_text"),
-					types.NewChainConfig("cosmos"),
-					suite.testData.profile.CreationDate,
-				),
-				types.NewChainLink(
-					types.NewAddress(priv2.PubKey().Address().String(), "cosmos"),
-					types.NewProof(priv2.PubKey(), "signature", "plain_text"),
-					types.NewChainConfig("cosmos"),
-					suite.testData.profile.CreationDate,
-				),
-			},
-		},
-	}
-
-	for _, test := range tests {
-		test := test
-		suite.Run(test.name, func() {
-			querier := keeper.NewQuerier(suite.k, suite.legacyAminoCdc)
-			req := abci.RequestQuery{Data: suite.legacyAminoCdc.MustMarshalJSON(&test.params)}
-
-			res, err := querier(suite.ctx, []string{types.QueryChainsLinks}, req)
-			suite.Require().NoError(err)
-			suite.Require().NotNil(res)
-			expectedIndented, err := codec.MarshalJSONIndent(suite.legacyAminoCdc, &test.expResponse)
-			suite.Require().NoError(err)
-			suite.Require().Equal(string(expectedIndented), string(res))
 		})
 	}
 }
