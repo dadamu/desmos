@@ -7,7 +7,7 @@ import (
 	context "context"
 	fmt "fmt"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
-	query "github.com/cosmos/cosmos-sdk/types/query"
+	_ "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -468,25 +468,25 @@ func (m *QueryUserBlocksResponse) GetBlocks() []UserBlock {
 	return nil
 }
 
-// QueryChainsLinksRequest is the request type for the Query/ChainsLinks RPC
+// QueryProfileByChainLinkRequest is the request type for the Query/ProfileByLink RPC
 // endpoint
-type QueryChainsLinksRequest struct {
-	// pagination defines an optional pagination for the request.
-	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+type QueryProfileByChainLinkRequest struct {
+	ChainName string `protobuf:"bytes,1,opt,name=chain_name,json=chainName,proto3" json:"chain_name,omitempty"`
+	Target    string `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
 }
 
-func (m *QueryChainsLinksRequest) Reset()         { *m = QueryChainsLinksRequest{} }
-func (m *QueryChainsLinksRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryChainsLinksRequest) ProtoMessage()    {}
-func (*QueryChainsLinksRequest) Descriptor() ([]byte, []int) {
+func (m *QueryProfileByChainLinkRequest) Reset()         { *m = QueryProfileByChainLinkRequest{} }
+func (m *QueryProfileByChainLinkRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryProfileByChainLinkRequest) ProtoMessage()    {}
+func (*QueryProfileByChainLinkRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e0074f57a59f38d, []int{10}
 }
-func (m *QueryChainsLinksRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryProfileByChainLinkRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryChainsLinksRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryProfileByChainLinkRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryChainsLinksRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryProfileByChainLinkRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -496,38 +496,50 @@ func (m *QueryChainsLinksRequest) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-func (m *QueryChainsLinksRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryChainsLinksRequest.Merge(m, src)
+func (m *QueryProfileByChainLinkRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProfileByChainLinkRequest.Merge(m, src)
 }
-func (m *QueryChainsLinksRequest) XXX_Size() int {
+func (m *QueryProfileByChainLinkRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryChainsLinksRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryChainsLinksRequest.DiscardUnknown(m)
+func (m *QueryProfileByChainLinkRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProfileByChainLinkRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryChainsLinksRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryProfileByChainLinkRequest proto.InternalMessageInfo
 
-// QueryChainsLinksResponse is the response type for the Query/ChainsLinks RPC
+func (m *QueryProfileByChainLinkRequest) GetChainName() string {
+	if m != nil {
+		return m.ChainName
+	}
+	return ""
+}
+
+func (m *QueryProfileByChainLinkRequest) GetTarget() string {
+	if m != nil {
+		return m.Target
+	}
+	return ""
+}
+
+// QueryProfileByChainLinkResponse is the response type for the Query/ProfileByChainLink RPC
 // method.
-type QueryChainsLinksResponse struct {
-	// chains links represent the list of all the links for all users
-	ChainsLinks []ChainLink         `protobuf:"bytes,1,rep,name=chains_links,json=chainsLinks,proto3" json:"chains_links"`
-	Pagination  *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+type QueryProfileByChainLinkResponse struct {
+	Profile *types.Any `protobuf:"bytes,1,opt,name=profile,proto3" json:"profile,omitempty"`
 }
 
-func (m *QueryChainsLinksResponse) Reset()         { *m = QueryChainsLinksResponse{} }
-func (m *QueryChainsLinksResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryChainsLinksResponse) ProtoMessage()    {}
-func (*QueryChainsLinksResponse) Descriptor() ([]byte, []int) {
+func (m *QueryProfileByChainLinkResponse) Reset()         { *m = QueryProfileByChainLinkResponse{} }
+func (m *QueryProfileByChainLinkResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryProfileByChainLinkResponse) ProtoMessage()    {}
+func (*QueryProfileByChainLinkResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_5e0074f57a59f38d, []int{11}
 }
-func (m *QueryChainsLinksResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryProfileByChainLinkResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryChainsLinksResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryProfileByChainLinkResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryChainsLinksResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryProfileByChainLinkResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -537,83 +549,23 @@ func (m *QueryChainsLinksResponse) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *QueryChainsLinksResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryChainsLinksResponse.Merge(m, src)
+func (m *QueryProfileByChainLinkResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryProfileByChainLinkResponse.Merge(m, src)
 }
-func (m *QueryChainsLinksResponse) XXX_Size() int {
+func (m *QueryProfileByChainLinkResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryChainsLinksResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryChainsLinksResponse.DiscardUnknown(m)
+func (m *QueryProfileByChainLinkResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryProfileByChainLinkResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryChainsLinksResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryProfileByChainLinkResponse proto.InternalMessageInfo
 
-func (m *QueryChainsLinksResponse) GetChainsLinks() []ChainLink {
+func (m *QueryProfileByChainLinkResponse) GetProfile() *types.Any {
 	if m != nil {
-		return m.ChainsLinks
+		return m.Profile
 	}
 	return nil
-}
-
-func (m *QueryChainsLinksResponse) GetPagination() *query.PageResponse {
-	if m != nil {
-		return m.Pagination
-	}
-	return nil
-}
-
-// QueryChainsLinksParams represent the parameters used to query for chains links
-type QueryChainsLinksParams struct {
-	Page  uint64 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	Limit uint64 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-}
-
-func (m *QueryChainsLinksParams) Reset()         { *m = QueryChainsLinksParams{} }
-func (m *QueryChainsLinksParams) String() string { return proto.CompactTextString(m) }
-func (*QueryChainsLinksParams) ProtoMessage()    {}
-func (*QueryChainsLinksParams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5e0074f57a59f38d, []int{12}
-}
-func (m *QueryChainsLinksParams) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryChainsLinksParams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryChainsLinksParams.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryChainsLinksParams) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryChainsLinksParams.Merge(m, src)
-}
-func (m *QueryChainsLinksParams) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryChainsLinksParams) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryChainsLinksParams.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryChainsLinksParams proto.InternalMessageInfo
-
-func (m *QueryChainsLinksParams) GetPage() uint64 {
-	if m != nil {
-		return m.Page
-	}
-	return 0
-}
-
-func (m *QueryChainsLinksParams) GetLimit() uint64 {
-	if m != nil {
-		return m.Limit
-	}
-	return 0
 }
 
 func init() {
@@ -627,9 +579,8 @@ func init() {
 	proto.RegisterType((*QueryUserRelationshipsResponse)(nil), "desmos.profiles.v1beta1.QueryUserRelationshipsResponse")
 	proto.RegisterType((*QueryUserBlocksRequest)(nil), "desmos.profiles.v1beta1.QueryUserBlocksRequest")
 	proto.RegisterType((*QueryUserBlocksResponse)(nil), "desmos.profiles.v1beta1.QueryUserBlocksResponse")
-	proto.RegisterType((*QueryChainsLinksRequest)(nil), "desmos.profiles.v1beta1.QueryChainsLinksRequest")
-	proto.RegisterType((*QueryChainsLinksResponse)(nil), "desmos.profiles.v1beta1.QueryChainsLinksResponse")
-	proto.RegisterType((*QueryChainsLinksParams)(nil), "desmos.profiles.v1beta1.QueryChainsLinksParams")
+	proto.RegisterType((*QueryProfileByChainLinkRequest)(nil), "desmos.profiles.v1beta1.QueryProfileByChainLinkRequest")
+	proto.RegisterType((*QueryProfileByChainLinkResponse)(nil), "desmos.profiles.v1beta1.QueryProfileByChainLinkResponse")
 }
 
 func init() {
@@ -637,60 +588,56 @@ func init() {
 }
 
 var fileDescriptor_5e0074f57a59f38d = []byte{
-	// 835 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x96, 0xcf, 0x6f, 0xd3, 0x48,
-	0x14, 0xc7, 0xe3, 0x6e, 0x9a, 0x76, 0x5f, 0xda, 0xc3, 0xce, 0x46, 0xdb, 0xd4, 0xda, 0x4d, 0xba,
-	0xee, 0x76, 0xdb, 0x6d, 0x1b, 0xbb, 0x4d, 0x56, 0x5d, 0x6d, 0x45, 0x25, 0x1a, 0x10, 0x3f, 0x04,
-	0x42, 0x34, 0x0a, 0x17, 0x38, 0x54, 0x4e, 0xea, 0xba, 0x56, 0x1d, 0x8f, 0xeb, 0x71, 0x10, 0x15,
-	0xe2, 0xc2, 0x05, 0x0e, 0x1c, 0x90, 0xb8, 0x70, 0xa3, 0x07, 0x2e, 0xdc, 0x38, 0xf0, 0x07, 0x70,
-	0xac, 0x38, 0x55, 0xe2, 0xc2, 0x09, 0xa1, 0x96, 0x03, 0xfc, 0x17, 0xc8, 0x33, 0xcf, 0x89, 0xa3,
-	0xc4, 0x49, 0x7a, 0xb3, 0xc7, 0xef, 0x7d, 0xdf, 0xe7, 0xcd, 0x9b, 0xf9, 0x26, 0x30, 0xbb, 0x63,
-	0xb0, 0x06, 0x65, 0x9a, 0xeb, 0xd1, 0x5d, 0xcb, 0x36, 0x98, 0x76, 0x7f, 0xb5, 0x66, 0xf8, 0xfa,
-	0xaa, 0x76, 0xd0, 0x34, 0xbc, 0x43, 0xd5, 0xf5, 0xa8, 0x4f, 0xc9, 0x94, 0x08, 0x52, 0xc3, 0x20,
-	0x15, 0x83, 0xe4, 0x8c, 0x49, 0x4d, 0xca, 0x63, 0xb4, 0xe0, 0x49, 0x84, 0xcb, 0xbf, 0x9b, 0x94,
-	0x9a, 0xb6, 0xa1, 0xe9, 0xae, 0xa5, 0xe9, 0x8e, 0x43, 0x7d, 0xdd, 0xb7, 0xa8, 0xc3, 0xf0, 0xeb,
-	0x34, 0x7e, 0xe5, 0x6f, 0xb5, 0xe6, 0xae, 0xa6, 0x3b, 0x58, 0x47, 0xfe, 0x2b, 0x0e, 0xc6, 0xd5,
-	0x3d, 0xbd, 0xc1, 0x06, 0x45, 0x35, 0xe8, 0x8e, 0x61, 0xb7, 0xca, 0xd4, 0x69, 0x10, 0xb5, 0x2d,
-	0xe8, 0xc4, 0x0b, 0x7e, 0x5a, 0x14, 0x6f, 0x5a, 0x4d, 0x67, 0x86, 0xe8, 0x33, 0x52, 0xc8, 0xb4,
-	0x1c, 0x8e, 0x2b, 0x62, 0x95, 0x12, 0xfc, 0xba, 0x15, 0x44, 0xdc, 0x16, 0xc5, 0x2a, 0xc6, 0x41,
-	0xd3, 0x60, 0x3e, 0x21, 0x90, 0x6c, 0x32, 0xc3, 0xcb, 0x4a, 0x33, 0xd2, 0xc2, 0xcf, 0x15, 0xfe,
-	0xbc, 0x3e, 0xfe, 0xf4, 0x28, 0x9f, 0xf8, 0x76, 0x94, 0x4f, 0x28, 0x55, 0xc8, 0x74, 0x26, 0x31,
-	0x97, 0x3a, 0xcc, 0x20, 0x17, 0x60, 0x0c, 0xa1, 0x79, 0x62, 0xba, 0x98, 0x51, 0xc5, 0x66, 0xa8,
-	0xe1, 0x66, 0xa8, 0x9b, 0xce, 0x61, 0x79, 0xe2, 0xc3, 0xbb, 0xc2, 0xf8, 0x66, 0xbd, 0x4e, 0x9b,
-	0x8e, 0x7f, 0xbd, 0x12, 0xa6, 0x28, 0xff, 0xc3, 0x34, 0x57, 0xbd, 0x5c, 0xd5, 0xcd, 0xaa, 0xa7,
-	0x3b, 0x6c, 0xd7, 0xf0, 0xd8, 0x70, 0x40, 0x36, 0xc8, 0xbd, 0x52, 0x11, 0xeb, 0x16, 0x8c, 0x7b,
-	0x42, 0x86, 0x65, 0xa5, 0x99, 0x9f, 0x16, 0xd2, 0xc5, 0x65, 0x35, 0x66, 0xe2, 0x6a, 0x54, 0x01,
-	0x6b, 0x97, 0x93, 0xc7, 0x9f, 0xf3, 0x89, 0x4a, 0x4b, 0x43, 0xc9, 0x00, 0x11, 0xed, 0xf3, 0xa9,
-	0x61, 0x94, 0x52, 0x0d, 0x77, 0x12, 0x57, 0xb1, 0xf8, 0x06, 0xa4, 0xc4, 0x74, 0x71, 0x4b, 0xf2,
-	0xb1, 0xa5, 0x45, 0x22, 0x56, 0xc3, 0x24, 0x65, 0x03, 0xfe, 0xe0, 0xaa, 0x77, 0x58, 0xc0, 0x63,
-	0x8b, 0x93, 0xb6, 0x67, 0xb9, 0x43, 0x6e, 0xcc, 0x13, 0x09, 0x72, 0x71, 0xf9, 0x08, 0xd8, 0x43,
-	0x80, 0x6c, 0xc1, 0xa4, 0x17, 0x0d, 0xce, 0x8e, 0xf0, 0x6d, 0x9b, 0x8b, 0x65, 0x8f, 0x4a, 0x63,
-	0x07, 0x9d, 0x0a, 0xca, 0x1a, 0xfc, 0xd6, 0x02, 0x29, 0xdb, 0xb4, 0xbe, 0x3f, 0x64, 0x07, 0xf7,
-	0x60, 0xaa, 0x2b, 0x0f, 0xc9, 0x2f, 0x42, 0xaa, 0xc6, 0x57, 0x70, 0xaa, 0x4a, 0x2c, 0x5e, 0x2b,
-	0x39, 0xdc, 0x5d, 0x91, 0xa7, 0xec, 0xa3, 0xf8, 0xa5, 0x3d, 0xdd, 0x72, 0xd8, 0x4d, 0xcb, 0x69,
-	0x53, 0x5d, 0x01, 0x68, 0x5f, 0x16, 0x9c, 0xdd, 0xdf, 0x2a, 0xde, 0xb3, 0xe0, 0x66, 0xa9, 0xc2,
-	0x41, 0xda, 0xd3, 0x33, 0xc3, 0xdb, 0x53, 0x89, 0x64, 0x46, 0x3a, 0x79, 0x2b, 0x41, 0xb6, 0xbb,
-	0x1a, 0xf6, 0x72, 0x03, 0x26, 0xea, 0x7c, 0x79, 0xdb, 0x0e, 0xd6, 0x07, 0x76, 0xc4, 0x35, 0x02,
-	0x09, 0xec, 0x28, 0x5d, 0x6f, 0x8b, 0x92, 0xab, 0x1d, 0xec, 0x23, 0x9c, 0x7d, 0x7e, 0x20, 0xbb,
-	0x20, 0x89, 0xc2, 0x2b, 0x65, 0x1c, 0x5a, 0x84, 0x58, 0x9c, 0xd2, 0x60, 0x68, 0xae, 0x6e, 0x8a,
-	0x7b, 0x9e, 0xac, 0xf0, 0x67, 0x92, 0x81, 0x51, 0xdb, 0x6a, 0x58, 0x3e, 0xaf, 0x98, 0xac, 0x88,
-	0x97, 0xe2, 0xf7, 0x31, 0x18, 0xe5, 0x22, 0xe4, 0xa5, 0x04, 0x63, 0x68, 0x19, 0x24, 0xfe, 0x06,
-	0xf6, 0xb0, 0x23, 0xb9, 0x30, 0x64, 0xb4, 0x68, 0x41, 0x59, 0x79, 0xfc, 0xf1, 0xeb, 0x8b, 0x91,
-	0x45, 0xb2, 0xa0, 0xc5, 0x1a, 0x6e, 0xb8, 0xf0, 0x30, 0x38, 0x6e, 0x8f, 0xc8, 0x1b, 0x09, 0x26,
-	0x3b, 0xcc, 0x83, 0x14, 0xfb, 0x97, 0xec, 0x65, 0x52, 0x72, 0xe9, 0x5c, 0x39, 0x08, 0xab, 0x71,
-	0xd8, 0x7f, 0xc8, 0x7c, 0x2c, 0xec, 0x8e, 0xaf, 0x9b, 0xdb, 0x7e, 0x8b, 0xec, 0x99, 0x04, 0x29,
-	0x9c, 0xc2, 0xd2, 0x80, 0x7d, 0x89, 0x1a, 0x94, 0xbc, 0x3c, 0x5c, 0x30, 0x62, 0xcd, 0x73, 0xac,
-	0x3f, 0x49, 0x5e, 0xeb, 0xff, 0xa3, 0x45, 0xde, 0x4b, 0xf0, 0x4b, 0x97, 0xbb, 0x90, 0xb5, 0xfe,
-	0xc5, 0xe2, 0xec, 0x4c, 0xfe, 0xef, 0xdc, 0x79, 0xc8, 0xbb, 0xce, 0x79, 0xff, 0x25, 0xc5, 0x90,
-	0xb7, 0xc3, 0x7e, 0x5a, 0xd0, 0x9d, 0xab, 0x38, 0xfd, 0xd7, 0x12, 0x40, 0xdb, 0x5f, 0x88, 0x36,
-	0x98, 0xa1, 0xc3, 0xc1, 0xe4, 0x95, 0xe1, 0x13, 0x90, 0xb6, 0xc4, 0x69, 0x0b, 0x64, 0xa9, 0x3f,
-	0xad, 0xb0, 0xa9, 0x10, 0xf3, 0x95, 0x04, 0xe9, 0xc8, 0x4d, 0x24, 0x03, 0xca, 0x76, 0x9b, 0x9a,
-	0xbc, 0x7a, 0x8e, 0x0c, 0x24, 0x5d, 0xe2, 0xa4, 0x73, 0x64, 0xb6, 0x3f, 0x29, 0x77, 0xad, 0xf2,
-	0xb5, 0xe3, 0xd3, 0x9c, 0x74, 0x72, 0x9a, 0x93, 0xbe, 0x9c, 0xe6, 0xa4, 0xe7, 0x67, 0xb9, 0xc4,
-	0xc9, 0x59, 0x2e, 0xf1, 0xe9, 0x2c, 0x97, 0xb8, 0xab, 0x9a, 0x96, 0xbf, 0xd7, 0xac, 0xa9, 0x75,
-	0xda, 0x40, 0xa1, 0x82, 0xad, 0xd7, 0x58, 0x28, 0xfa, 0xa0, 0x7d, 0xbc, 0xfc, 0x43, 0xd7, 0x60,
-	0xb5, 0x14, 0xff, 0xc7, 0x50, 0xfa, 0x11, 0x00, 0x00, 0xff, 0xff, 0xd7, 0x10, 0x2b, 0x2a, 0xc0,
-	0x09, 0x00, 0x00,
+	// 782 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x95, 0x41, 0x4f, 0x13, 0x4d,
+	0x18, 0xc7, 0xbb, 0xbc, 0xbc, 0xa5, 0x0c, 0x2f, 0x87, 0x77, 0xde, 0x06, 0xca, 0xe6, 0xa5, 0xc5,
+	0x55, 0x03, 0x02, 0xdd, 0x85, 0xd6, 0x80, 0x10, 0x89, 0x52, 0x3d, 0x68, 0x62, 0x88, 0x34, 0x35,
+	0x26, 0x7a, 0x68, 0xa6, 0x65, 0x58, 0x36, 0x6c, 0x77, 0x96, 0x9d, 0xad, 0xb1, 0x21, 0x5c, 0xbc,
+	0xe8, 0xc1, 0x83, 0xd1, 0x8b, 0x47, 0x0e, 0x5e, 0xbc, 0xfb, 0x01, 0x3c, 0x12, 0x4f, 0x24, 0x5e,
+	0x3c, 0x19, 0x03, 0x1e, 0xfc, 0x18, 0xa6, 0x33, 0xcf, 0x96, 0x36, 0xed, 0x96, 0x25, 0xf1, 0xd6,
+	0x99, 0x79, 0xfe, 0xcf, 0xf3, 0x9b, 0x67, 0xf6, 0xff, 0x14, 0x5d, 0xde, 0xa2, 0xbc, 0xc6, 0xb8,
+	0xe1, 0x7a, 0x6c, 0xdb, 0xb2, 0x29, 0x37, 0x9e, 0x2d, 0x56, 0xa8, 0x4f, 0x16, 0x8d, 0xbd, 0x3a,
+	0xf5, 0x1a, 0xba, 0xeb, 0x31, 0x9f, 0xe1, 0x71, 0x19, 0xa4, 0x07, 0x41, 0x3a, 0x04, 0xa9, 0x49,
+	0x93, 0x99, 0x4c, 0xc4, 0x18, 0xcd, 0x5f, 0x32, 0x5c, 0xfd, 0xdf, 0x64, 0xcc, 0xb4, 0xa9, 0x41,
+	0x5c, 0xcb, 0x20, 0x8e, 0xc3, 0x7c, 0xe2, 0x5b, 0xcc, 0xe1, 0x70, 0x3a, 0x01, 0xa7, 0x62, 0x55,
+	0xa9, 0x6f, 0x1b, 0xc4, 0x81, 0x3a, 0xea, 0x95, 0x30, 0x18, 0x97, 0x78, 0xa4, 0xc6, 0xcf, 0x8b,
+	0xaa, 0xb1, 0x2d, 0x6a, 0xb7, 0xca, 0x54, 0x59, 0x33, 0xaa, 0x2c, 0xe9, 0xe4, 0x02, 0x8e, 0x66,
+	0xe5, 0xca, 0xa8, 0x10, 0x4e, 0xe5, 0x3d, 0xdb, 0x0a, 0x99, 0x96, 0x23, 0x70, 0x65, 0xac, 0x96,
+	0x47, 0xff, 0x6d, 0x36, 0x23, 0x1e, 0xca, 0x62, 0x45, 0xba, 0x57, 0xa7, 0xdc, 0xc7, 0x18, 0x0d,
+	0xd6, 0x39, 0xf5, 0x52, 0xca, 0x94, 0x32, 0x33, 0x5c, 0x14, 0xbf, 0x57, 0x13, 0xaf, 0x0e, 0x33,
+	0xb1, 0x5f, 0x87, 0x99, 0x98, 0x56, 0x42, 0xc9, 0x4e, 0x11, 0x77, 0x99, 0xc3, 0x29, 0xbe, 0x89,
+	0x86, 0x00, 0x5a, 0x08, 0x47, 0x72, 0x49, 0x5d, 0x36, 0x43, 0x0f, 0x9a, 0xa1, 0xaf, 0x3b, 0x8d,
+	0xc2, 0x3f, 0x5f, 0x3e, 0x65, 0x13, 0xeb, 0xd5, 0x2a, 0xab, 0x3b, 0xfe, 0xfd, 0x62, 0x20, 0xd1,
+	0x56, 0xd0, 0x84, 0xc8, 0x7a, 0xb7, 0x44, 0xcc, 0x92, 0x47, 0x1c, 0xbe, 0x4d, 0x3d, 0x1e, 0x0d,
+	0xc8, 0x46, 0x6a, 0x2f, 0x29, 0x60, 0x6d, 0xa0, 0x84, 0x27, 0xd3, 0xf0, 0x94, 0x32, 0xf5, 0xd7,
+	0xcc, 0x48, 0x6e, 0x5e, 0x0f, 0x79, 0x71, 0xbd, 0x3d, 0x03, 0xd4, 0x2e, 0x0c, 0x1e, 0x7d, 0xcf,
+	0xc4, 0x8a, 0xad, 0x1c, 0x5a, 0x12, 0x61, 0x79, 0x7d, 0xf1, 0x6a, 0x10, 0xa5, 0x95, 0x82, 0x4e,
+	0xc2, 0x2e, 0x14, 0x5f, 0x43, 0x71, 0xf9, 0xba, 0xd0, 0x92, 0x4c, 0x68, 0x69, 0x29, 0x84, 0x6a,
+	0x20, 0xd2, 0xd6, 0xd0, 0xa4, 0xc8, 0xfa, 0x88, 0x37, 0x79, 0x6c, 0xf9, 0xa5, 0xed, 0x58, 0x6e,
+	0xc4, 0xc6, 0xbc, 0x54, 0x50, 0x3a, 0x4c, 0x0f, 0x80, 0x3d, 0x12, 0xe0, 0x4d, 0x34, 0xea, 0xb5,
+	0x07, 0xa7, 0x06, 0x44, 0xdb, 0xae, 0x86, 0xb2, 0xb7, 0xa7, 0x86, 0x1b, 0x74, 0x66, 0xd0, 0x96,
+	0xd0, 0x58, 0x0b, 0xa4, 0x60, 0xb3, 0xea, 0x6e, 0xc4, 0x1b, 0x3c, 0x45, 0xe3, 0x5d, 0x3a, 0x20,
+	0xbf, 0x8d, 0xe2, 0x15, 0xb1, 0x03, 0xaf, 0xaa, 0x85, 0xe2, 0xb5, 0xc4, 0x41, 0x77, 0xa5, 0x4e,
+	0x7b, 0x0c, 0xdd, 0x81, 0x0f, 0xb9, 0xd0, 0xb8, 0xb3, 0x43, 0x2c, 0xe7, 0x81, 0xe5, 0xec, 0x06,
+	0x70, 0x93, 0x08, 0x55, 0x9b, 0x7b, 0x65, 0x87, 0xd4, 0x28, 0x20, 0x0e, 0x8b, 0x9d, 0x0d, 0x52,
+	0xa3, 0x78, 0x0c, 0xc5, 0x7d, 0xe2, 0x99, 0xd4, 0x4f, 0x0d, 0x88, 0x23, 0x58, 0x69, 0x65, 0x94,
+	0x09, 0x4d, 0xfc, 0x27, 0xcc, 0x92, 0x7b, 0x9b, 0x40, 0x7f, 0x8b, 0x0a, 0xf8, 0xbd, 0x82, 0x86,
+	0xa0, 0x0c, 0x0e, 0xff, 0xae, 0x7b, 0x98, 0x5c, 0xcd, 0x46, 0x8c, 0x96, 0xc0, 0xda, 0xc2, 0x8b,
+	0xaf, 0x3f, 0xdf, 0x0d, 0xcc, 0xe2, 0x19, 0x23, 0x74, 0x8c, 0x05, 0x1b, 0xfb, 0xcd, 0x47, 0x3c,
+	0xc0, 0x1f, 0x15, 0x34, 0xda, 0x61, 0x49, 0x9c, 0xeb, 0x5f, 0xb2, 0x97, 0xf5, 0xd5, 0xfc, 0x85,
+	0x34, 0x00, 0x6b, 0x08, 0xd8, 0x6b, 0x78, 0x3a, 0x14, 0x76, 0xcb, 0x27, 0x66, 0xd9, 0x6f, 0x91,
+	0xbd, 0x56, 0x50, 0x5c, 0x3a, 0x10, 0xcf, 0x9d, 0xd3, 0x97, 0x76, 0xdb, 0xab, 0xf3, 0xd1, 0x82,
+	0x01, 0x6b, 0x5a, 0x60, 0x5d, 0xc2, 0x19, 0xa3, 0xff, 0x5f, 0x01, 0xfe, 0xac, 0xa0, 0x7f, 0xbb,
+	0x3c, 0x8b, 0x97, 0xfa, 0x17, 0x0b, 0x1b, 0x12, 0xea, 0xf2, 0x85, 0x75, 0xc0, 0xbb, 0x2a, 0x78,
+	0xaf, 0xe3, 0x5c, 0xc0, 0xdb, 0x61, 0xea, 0x16, 0x74, 0xe7, 0x2e, 0xbc, 0xfe, 0x07, 0x05, 0xa1,
+	0x33, 0xd7, 0x62, 0xe3, 0x7c, 0x86, 0x8e, 0xb9, 0xa0, 0x2e, 0x44, 0x17, 0x00, 0x6d, 0x5e, 0xd0,
+	0x66, 0xf1, 0x5c, 0x7f, 0x5a, 0x69, 0xfe, 0x00, 0xf3, 0x48, 0x41, 0xb8, 0xdb, 0xa6, 0x78, 0x39,
+	0x92, 0x39, 0xba, 0x27, 0x86, 0x7a, 0xe3, 0xe2, 0x42, 0xc0, 0xbf, 0x25, 0xf0, 0x57, 0xf0, 0x72,
+	0x04, 0x83, 0x9d, 0x0d, 0xa5, 0x03, 0x63, 0x5f, 0x0e, 0x9d, 0x83, 0xc2, 0xbd, 0xa3, 0x93, 0xb4,
+	0x72, 0x7c, 0x92, 0x56, 0x7e, 0x9c, 0xa4, 0x95, 0x37, 0xa7, 0xe9, 0xd8, 0xf1, 0x69, 0x3a, 0xf6,
+	0xed, 0x34, 0x1d, 0x7b, 0xa2, 0x9b, 0x96, 0xbf, 0x53, 0xaf, 0xe8, 0x55, 0x56, 0x83, 0xe4, 0x59,
+	0x9b, 0x54, 0x78, 0x50, 0xe8, 0xf9, 0x59, 0x66, 0xbf, 0xe1, 0x52, 0x5e, 0x89, 0x8b, 0x19, 0x94,
+	0xff, 0x1d, 0x00, 0x00, 0xff, 0xff, 0xdd, 0x1e, 0x9e, 0x19, 0x3f, 0x09, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -719,8 +666,8 @@ type QueryClient interface {
 	UserRelationships(ctx context.Context, in *QueryUserRelationshipsRequest, opts ...grpc.CallOption) (*QueryUserRelationshipsResponse, error)
 	// UserBlocks queries the user blocks for the user having the given address
 	UserBlocks(ctx context.Context, in *QueryUserBlocksRequest, opts ...grpc.CallOption) (*QueryUserBlocksResponse, error)
-	// ChainsLinks queries all the links for all users
-	ChainsLinks(ctx context.Context, in *QueryChainsLinksRequest, opts ...grpc.CallOption) (*QueryChainsLinksResponse, error)
+	// ProfileByChainLink the profile for the user having the given address and chain name
+	ProfileByChainLink(ctx context.Context, in *QueryProfileByChainLinkRequest, opts ...grpc.CallOption) (*QueryProfileByChainLinkResponse, error)
 }
 
 type queryClient struct {
@@ -776,9 +723,9 @@ func (c *queryClient) UserBlocks(ctx context.Context, in *QueryUserBlocksRequest
 	return out, nil
 }
 
-func (c *queryClient) ChainsLinks(ctx context.Context, in *QueryChainsLinksRequest, opts ...grpc.CallOption) (*QueryChainsLinksResponse, error) {
-	out := new(QueryChainsLinksResponse)
-	err := c.cc.Invoke(ctx, "/desmos.profiles.v1beta1.Query/ChainsLinks", in, out, opts...)
+func (c *queryClient) ProfileByChainLink(ctx context.Context, in *QueryProfileByChainLinkRequest, opts ...grpc.CallOption) (*QueryProfileByChainLinkResponse, error) {
+	out := new(QueryProfileByChainLinkResponse)
+	err := c.cc.Invoke(ctx, "/desmos.profiles.v1beta1.Query/ProfileByChainLink", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -801,8 +748,8 @@ type QueryServer interface {
 	UserRelationships(context.Context, *QueryUserRelationshipsRequest) (*QueryUserRelationshipsResponse, error)
 	// UserBlocks queries the user blocks for the user having the given address
 	UserBlocks(context.Context, *QueryUserBlocksRequest) (*QueryUserBlocksResponse, error)
-	// ChainsLinks queries all the links for all users
-	ChainsLinks(context.Context, *QueryChainsLinksRequest) (*QueryChainsLinksResponse, error)
+	// ProfileByChainLink the profile for the user having the given address and chain name
+	ProfileByChainLink(context.Context, *QueryProfileByChainLinkRequest) (*QueryProfileByChainLinkResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -824,8 +771,8 @@ func (*UnimplementedQueryServer) UserRelationships(ctx context.Context, req *Que
 func (*UnimplementedQueryServer) UserBlocks(ctx context.Context, req *QueryUserBlocksRequest) (*QueryUserBlocksResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserBlocks not implemented")
 }
-func (*UnimplementedQueryServer) ChainsLinks(ctx context.Context, req *QueryChainsLinksRequest) (*QueryChainsLinksResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChainsLinks not implemented")
+func (*UnimplementedQueryServer) ProfileByChainLink(ctx context.Context, req *QueryProfileByChainLinkRequest) (*QueryProfileByChainLinkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProfileByChainLink not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -922,20 +869,20 @@ func _Query_UserBlocks_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_ChainsLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryChainsLinksRequest)
+func _Query_ProfileByChainLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryProfileByChainLinkRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).ChainsLinks(ctx, in)
+		return srv.(QueryServer).ProfileByChainLink(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/desmos.profiles.v1beta1.Query/ChainsLinks",
+		FullMethod: "/desmos.profiles.v1beta1.Query/ProfileByChainLink",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).ChainsLinks(ctx, req.(*QueryChainsLinksRequest))
+		return srv.(QueryServer).ProfileByChainLink(ctx, req.(*QueryProfileByChainLinkRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -965,8 +912,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_UserBlocks_Handler,
 		},
 		{
-			MethodName: "ChainsLinks",
-			Handler:    _Query_ChainsLinks_Handler,
+			MethodName: "ProfileByChainLink",
+			Handler:    _Query_ProfileByChainLink_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1302,7 +1249,7 @@ func (m *QueryUserBlocksResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryChainsLinksRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryProfileByChainLinkRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1312,19 +1259,56 @@ func (m *QueryChainsLinksRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryChainsLinksRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryProfileByChainLinkRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryChainsLinksRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryProfileByChainLinkRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Pagination != nil {
+	if len(m.Target) > 0 {
+		i -= len(m.Target)
+		copy(dAtA[i:], m.Target)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Target)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ChainName) > 0 {
+		i -= len(m.ChainName)
+		copy(dAtA[i:], m.ChainName)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ChainName)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryProfileByChainLinkResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryProfileByChainLinkResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryProfileByChainLinkResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Profile != nil {
 		{
-			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.Profile.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -1333,88 +1317,6 @@ func (m *QueryChainsLinksRequest) MarshalToSizedBuffer(dAtA []byte) (int, error)
 		}
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryChainsLinksResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryChainsLinksResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryChainsLinksResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Pagination != nil {
-		{
-			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintQuery(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.ChainsLinks) > 0 {
-		for iNdEx := len(m.ChainsLinks) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.ChainsLinks[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryChainsLinksParams) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryChainsLinksParams) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryChainsLinksParams) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.Limit != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.Limit))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Page != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.Page))
-		i--
-		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -1564,49 +1466,32 @@ func (m *QueryUserBlocksResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryChainsLinksRequest) Size() (n int) {
+func (m *QueryProfileByChainLinkRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Pagination != nil {
-		l = m.Pagination.Size()
+	l = len(m.ChainName)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Target)
+	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
 
-func (m *QueryChainsLinksResponse) Size() (n int) {
+func (m *QueryProfileByChainLinkResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.ChainsLinks) > 0 {
-		for _, e := range m.ChainsLinks {
-			l = e.Size()
-			n += 1 + l + sovQuery(uint64(l))
-		}
-	}
-	if m.Pagination != nil {
-		l = m.Pagination.Size()
+	if m.Profile != nil {
+		l = m.Profile.Size()
 		n += 1 + l + sovQuery(uint64(l))
-	}
-	return n
-}
-
-func (m *QueryChainsLinksParams) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Page != 0 {
-		n += 1 + sovQuery(uint64(m.Page))
-	}
-	if m.Limit != 0 {
-		n += 1 + sovQuery(uint64(m.Limit))
 	}
 	return n
 }
@@ -2448,7 +2333,7 @@ func (m *QueryUserBlocksResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryChainsLinksRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryProfileByChainLinkRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2471,17 +2356,17 @@ func (m *QueryChainsLinksRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryChainsLinksRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryProfileByChainLinkRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryChainsLinksRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryProfileByChainLinkRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field ChainName", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowQuery
@@ -2491,27 +2376,55 @@ func (m *QueryChainsLinksRequest) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthQuery
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthQuery
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Pagination == nil {
-				m.Pagination = &query.PageRequest{}
+			m.ChainName = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
 			}
-			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Target = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2534,7 +2447,7 @@ func (m *QueryChainsLinksRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryChainsLinksResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryProfileByChainLinkResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2557,15 +2470,15 @@ func (m *QueryChainsLinksResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryChainsLinksResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryProfileByChainLinkResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryChainsLinksResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryProfileByChainLinkResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainsLinks", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Profile", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -2592,135 +2505,13 @@ func (m *QueryChainsLinksResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ChainsLinks = append(m.ChainsLinks, ChainLink{})
-			if err := m.ChainsLinks[len(m.ChainsLinks)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if m.Profile == nil {
+				m.Profile = &types.Any{}
+			}
+			if err := m.Profile.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Pagination == nil {
-				m.Pagination = &query.PageResponse{}
-			}
-			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryChainsLinksParams) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryChainsLinksParams: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryChainsLinksParams: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Page", wireType)
-			}
-			m.Page = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Page |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Limit", wireType)
-			}
-			m.Limit = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Limit |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
