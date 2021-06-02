@@ -14,16 +14,18 @@ import (
 // StoreChainLink stores the given chain link inside the current context.
 // It assumes that the given chain link has already been validated.
 func (k Keeper) StoreChainLink(ctx sdk.Context, user string, link types.ChainLink) error {
-	if _, found := k.GetChainLink(ctx, link.ChainConfig.Name, link.Address); found {
+
+	target := link.Address.GetValue()
+	if _, found := k.GetChainLink(ctx, link.ChainConfig.Name, target); found {
 		return fmt.Errorf("chain link already exists")
 	}
 
 	// check target address has a profile or not
 	if link.ChainConfig.Name == "desmos" {
-		if _, err := sdk.AccAddressFromBech32(link.Address); err != nil {
+		if _, err := sdk.AccAddressFromBech32(target); err != nil {
 			return err
 		}
-		_, found, err := k.GetProfile(ctx, link.Address)
+		_, found, err := k.GetProfile(ctx, target)
 		if err != nil {
 			return err
 		}
@@ -47,7 +49,7 @@ func (k Keeper) StoreChainLink(ctx sdk.Context, user string, link types.ChainLin
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	key := types.ChainsLinksStoreKey(link.ChainConfig.Name, link.Address)
+	key := types.ChainsLinksStoreKey(link.ChainConfig.Name, target)
 	store.Set(key, k.cdc.MustMarshalBinaryBare(&link))
 	return nil
 }
@@ -80,7 +82,7 @@ func (k Keeper) GetChainsLinksWithPagination(ctx sdk.Context, page int, limit in
 	return pagedLinks
 }
 
-// DeleteLink allows to delete a link associated with the given address and chain name inside the current context.
+// DeleteChainLink allows to delete a link associated with the given address and chain name inside the current context.
 // It assumes that the related link exists.
 func (k Keeper) DeleteChainLink(ctx sdk.Context, owner, chainName, target string) error {
 	// Check if address has the profile and get the profile
@@ -92,25 +94,23 @@ func (k Keeper) DeleteChainLink(ctx sdk.Context, owner, chainName, target string
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, ("non existent profile on owner address"))
 	}
 
-	isTargetExist := false
-	newChainsLinks := []types.ChainLink{}
+	doesLinkExists := false
 	// Try to find the target link
-	for _, link := range profile.ChainsLinks {
-		if link.ChainConfig.Name == chainName && link.Address == target {
-			isTargetExist = true
-			continue
+	for index, link := range profile.ChainsLinks {
+		if link.ChainConfig.Name == chainName && link.Address.GetValue() == target {
+			doesLinkExists = true
+			newChainsLinks := append(profile.ChainsLinks[:index], profile.ChainsLinks[index+1:]...)
+			profile.ChainsLinks = newChainsLinks
+			// Update profile status
+			if err = k.StoreProfile(ctx, profile); err != nil {
+				return err
+			}
+			break
 		}
-		newChainsLinks = append(newChainsLinks, link)
 	}
 
-	if !isTargetExist {
+	if !doesLinkExists {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, ("non existent target chain link in the profile"))
-	}
-	// Update profile status
-	profile.ChainsLinks = newChainsLinks
-	err = k.StoreProfile(ctx, profile)
-	if err != nil {
-		return err
 	}
 
 	store := ctx.KVStore(k.storeKey)
