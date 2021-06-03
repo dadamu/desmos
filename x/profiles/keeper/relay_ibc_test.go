@@ -30,7 +30,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Invalid packet returns error",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.Address{},
+					types.NewBech32Address("", "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,
@@ -54,7 +54,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Verify source proof failed returns error",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.NewAddress(srcAddr, "cosmos"),
+					types.NewBech32Address(srcAddr, "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,
@@ -78,7 +78,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Verify destination proof failed returns error",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.NewAddress(srcAddr, "cosmos"),
+					types.NewBech32Address(srcAddr, "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,
@@ -102,7 +102,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Destination has no profile returns error",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.NewAddress(srcAddr, "cosmos"),
+					types.NewBech32Address(srcAddr, "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,
@@ -126,7 +126,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Duplicated links returns error",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.NewAddress(srcAddr, "cosmos"),
+					types.NewBech32Address(srcAddr, "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,
@@ -167,7 +167,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 					suite.chainB.GetContext(),
 					profile.GetAddress().String(),
 					types.NewChainLink(
-						types.NewAddress(suite.chainA.Account.GetAddress().String(), "cosmos"),
+						types.NewBech32Address(suite.chainA.Account.GetAddress().String(), "cosmos"),
 						types.NewProof(
 							suite.chainA.Account.GetPubKey(),
 							"signature",
@@ -187,7 +187,7 @@ func (suite *KeeperTestSuite) TestOnRecvPacket() {
 			name: "Create link from source chain successfully",
 			malleate: func(srcAddr, srcSigHex, destAddr, destSigHex string) {
 				packetData = types.NewLinkChainAccountPacketData(
-					types.NewAddress(srcAddr, "cosmos"),
+					types.NewBech32Address(srcAddr, "cosmos"),
 					types.NewProof(
 						suite.chainA.Account.GetPubKey(),
 						srcSigHex,

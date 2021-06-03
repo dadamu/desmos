@@ -83,7 +83,7 @@ func (suite *KeeperTestSuite) Test_handleMsgLinkChainAccount() {
 				existentLinks = nil
 			},
 			msg: types.NewMsgLinkChainAccount(
-				types.NewAddress(srcAddr, "cosmos"),
+				types.NewBech32Address(srcAddr, "cosmos"),
 				types.NewProof(srcPubKey, srcSigHex, srcAddr),
 				types.NewChainConfig("cosmos"),
 				destAddr,
@@ -155,24 +155,21 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 	srcSigHex := hex.EncodeToString(srcSig)
 
 	link := types.NewChainLink(
-		types.NewAddress(srcAddr, "cosmos"),
+		types.NewBech32Address(srcAddr, "cosmos"),
 		types.NewProof(srcPubKey, srcSigHex, srcAddr),
 		types.NewChainConfig("cosmos"),
 		time.Time{},
 	)
 
 	validProfile := *suite.testData.profile
-	validProfile.ChainsLinks = []types.ChainLink{
-		link,
-	}
 
 	tests := []struct {
-		name             string
-		msg              *types.MsgUnlinkChainAccount
-		shouldErr        bool
-		expEvents        sdk.Events
-		existentProfiles []*types.Profile
-		existentLinks    []types.ChainLink
+		name            string
+		msg             *types.MsgUnlinkChainAccount
+		shouldErr       bool
+		expEvents       sdk.Events
+		existentProfile *types.Profile
+		existentLinks   []types.ChainLink
 	}{
 		{
 			name:      "No error message",
@@ -186,7 +183,8 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 					sdk.NewAttribute(types.AttributeChainLinkAccountOwner, suite.testData.user),
 				),
 			},
-			existentProfiles: []*types.Profile{&validProfile},
+			existentProfile: &validProfile,
+			existentLinks:   []types.ChainLink{link},
 		},
 	}
 
@@ -194,17 +192,17 @@ func (suite *KeeperTestSuite) Test_handleMsgUnlinkChainAccount() {
 		test := test
 		suite.Run(test.name, func() {
 			suite.SetupTest()
-			for _, acc := range test.existentProfiles {
-				err := suite.k.StoreProfile(suite.ctx, acc)
+
+			err := suite.k.StoreProfile(suite.ctx, test.existentProfile)
+			suite.Require().NoError(err)
+
+			for _, link := range test.existentLinks {
+				err := suite.k.StoreChainLink(suite.ctx, test.existentProfile.GetAddress().String(), link)
 				suite.Require().NoError(err)
-				for _, link := range acc.ChainsLinks {
-					err := suite.k.StoreChainLink(suite.ctx, acc.GetAddress().String(), link)
-					suite.Require().NoError(err)
-				}
 			}
 
 			server := keeper.NewMsgServerImpl(suite.k)
-			_, err := server.UnlinkChainAccount(sdk.WrapSDKContext(suite.ctx), test.msg)
+			_, err = server.UnlinkChainAccount(sdk.WrapSDKContext(suite.ctx), test.msg)
 			suite.Require().NoError(err)
 			suite.Require().Equal(test.expEvents, suite.ctx.EventManager().Events())
 
