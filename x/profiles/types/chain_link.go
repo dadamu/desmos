@@ -73,9 +73,10 @@ func (proof Proof) Verify(unpacker codectypes.AnyUnpacker) error {
 type AddressData interface {
 	proto.Message
 	Validate() error
-	GetAddressString() string
+	AddressString() string
 }
 
+// NewBech32Address is a constructor function for Bech32Address
 func NewBech32Address(value, prefix string) *Bech32Address {
 	return &Bech32Address{Value: value, Prefix: prefix}
 }
@@ -90,10 +91,11 @@ func (address Bech32Address) Validate() error {
 	return nil
 }
 
-func (address Bech32Address) GetAddressString() string {
+func (address Bech32Address) AddressString() string {
 	return address.Value
 }
 
+// NewBase58Address is a constructor function for Base58Address
 func NewBase58Address(value, prefix string) *Base58Address {
 	return &Base58Address{Value: value}
 }
@@ -105,11 +107,12 @@ func (address Base58Address) Validate() error {
 	return nil
 }
 
-func (address Base58Address) GetAddressString() string {
+func (address Base58Address) AddressString() string {
 	return address.Value
 }
 
-func UnpackAddress(unpacker codectypes.AnyUnpacker, addressAny *codectypes.Any) (AddressData, error) {
+// UnpackAddressData deserializes the given any type value as an address data using the provided unpacker
+func UnpackAddressData(unpacker codectypes.AnyUnpacker, addressAny *codectypes.Any) (AddressData, error) {
 	var address AddressData
 	if err := unpacker.UnpackAny(addressAny, &address); err != nil {
 		return nil, err
