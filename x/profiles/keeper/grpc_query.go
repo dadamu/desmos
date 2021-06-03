@@ -91,10 +91,10 @@ func (k Keeper) Params(ctx context.Context, _ *types.QueryParamsRequest) (*types
 func (k Keeper) ProfileByChainLink(ctx context.Context, request *types.QueryProfileByChainLinkRequest) (*types.QueryProfileByChainLinkResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	account, found := k.GetAccountByChainLink(sdkCtx, request.ChainName, request.Target)
+	account, found := k.GetAccountByChainLink(sdkCtx, request.ChainName, request.TargetAddress)
 	if !found {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
-			"No link related to this address: %s", request.Target)
+			"no link related to this address: %s", request.TargetAddress)
 	}
 
 	profile, found, err := k.GetProfile(sdkCtx, account.String())
@@ -103,7 +103,7 @@ func (k Keeper) ProfileByChainLink(ctx context.Context, request *types.QueryProf
 	}
 	if !found {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest,
-			"Profile with address %s doesn't exists", account.String())
+			"profile with address %s does not exist", account.String())
 	}
 
 	profileAny, err := codectypes.NewAnyWithValue(profile)
