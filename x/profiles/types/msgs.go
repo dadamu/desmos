@@ -7,7 +7,6 @@ import (
 	"github.com/desmos-labs/desmos/x/commons"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -548,14 +547,6 @@ func (msg MsgLinkChainAccount) GetSignBytes() []byte {
 func (msg *MsgLinkChainAccount) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	var address AddressData
 	if err := unpacker.UnpackAny(msg.SourceAddress, &address); err != nil {
-		return err
-	}
-
-	var pubKey cryptotypes.PubKey
-	if err := unpacker.UnpackAny(msg.SourceProof.PubKey, &pubKey); err != nil {
-		return err
-	}
-	if err := unpacker.UnpackAny(msg.DestinationProof.PubKey, &pubKey); err != nil {
 		return err
 	}
 
