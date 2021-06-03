@@ -149,19 +149,9 @@ func TestChainLink_Validate(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "Empty address returns error",
-			chainLink: types.NewChainLink(
-				types.Address{},
-				types.NewProof(pubKey, sigHex, plainText),
-				types.NewChainConfig("cosmos"),
-				time.Time{},
-			),
-			expError: fmt.Errorf("unknown address type"),
-		},
-		{
 			name: "Invalid Proof returns error",
 			chainLink: types.NewChainLink(
-				types.NewAddress(addr, "cosmos"),
+				types.NewBech32Address(addr, "cosmos"),
 				types.NewProof(pubKey, "=", plainText),
 				types.NewChainConfig("cosmos"),
 				time.Time{},
@@ -171,7 +161,7 @@ func TestChainLink_Validate(t *testing.T) {
 		{
 			name: "Invalid chain config returns error",
 			chainLink: types.NewChainLink(
-				types.NewAddress(addr, "cosmos"),
+				types.NewBech32Address(addr, "cosmos"),
 				types.NewProof(pubKey, sigHex, plainText),
 				types.NewChainConfig(""),
 				time.Time{},
@@ -181,7 +171,7 @@ func TestChainLink_Validate(t *testing.T) {
 		{
 			name: "invalid time returns no error",
 			chainLink: types.NewChainLink(
-				types.NewAddress(addr, "cosmos"),
+				types.NewBech32Address(addr, "cosmos"),
 				types.NewProof(pubKey, sigHex, plainText),
 				types.NewChainConfig("cosmos"),
 				time.Time{},
@@ -191,7 +181,7 @@ func TestChainLink_Validate(t *testing.T) {
 		{
 			name: "Correct chain link returns no error",
 			chainLink: types.NewChainLink(
-				types.NewAddress(addr, "cosmos"),
+				types.NewBech32Address(addr, "cosmos"),
 				types.NewProof(pubKey, sigHex, plainText),
 				types.NewChainConfig("cosmos"),
 				time.Now(),
@@ -220,7 +210,7 @@ func Test_ChainLinkMarshaling(t *testing.T) {
 
 	cdc, _ := app.MakeCodecs()
 	chainLink := types.NewChainLink(
-		types.NewAddress(addr, "cosmos"),
+		types.NewBech32Address(addr, "cosmos"),
 		types.NewProof(pubKey, sigHex, plainText),
 		types.NewChainConfig("cosmos"),
 		time.Time{},
