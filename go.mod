@@ -6,9 +6,9 @@ require (
 	github.com/CosmWasm/wasmd v0.21.1-0.20220105132732-3d2affb31f82
 	github.com/armon/go-metrics v0.3.10
 	github.com/btcsuite/btcd v0.22.0-beta
-	github.com/cosmos/cosmos-sdk v0.44.5
+	github.com/cosmos/cosmos-sdk v0.45.1
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v2 v2.0.3
+	github.com/cosmos/ibc-go/v2 v2.2.0
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.3
