@@ -6,9 +6,9 @@ require (
 	github.com/CosmWasm/wasmd v0.21.1-0.20220105132732-3d2affb31f82
 	github.com/armon/go-metrics v0.3.10
 	github.com/btcsuite/btcd v0.22.0-beta
-	github.com/cosmos/cosmos-sdk v0.44.5
+	github.com/cosmos/cosmos-sdk v0.45.5
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go/v2 v2.0.3
+	github.com/cosmos/ibc-go/v2 v2.3.1
 	github.com/ethereum/go-ethereum v1.10.15
 	github.com/ghodss/yaml v1.0.0
 	github.com/gogo/protobuf v1.3.3
@@ -21,12 +21,12 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.4.1
-	github.com/spf13/cobra v1.3.0
-	github.com/stretchr/testify v1.7.0
-	github.com/tendermint/tendermint v0.34.15
+	github.com/spf13/cobra v1.4.0
+	github.com/stretchr/testify v1.7.1
+	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.6
-	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa
-	google.golang.org/grpc v1.43.0
+	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
+	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
 )
