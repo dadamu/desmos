@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/CosmWasm/wasmd v0.21.1-0.20220105132732-3d2affb31f82
-	github.com/armon/go-metrics v0.3.10
+	github.com/armon/go-metrics v0.4.1
 	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/cosmos/cosmos-sdk v0.44.5
 	github.com/cosmos/go-bip39 v1.0.0
